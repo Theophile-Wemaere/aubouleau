@@ -1,0 +1,32 @@
+services:
+  aubouleau-db:
+    image: mariadb:latest
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_DATABASE=aubouleau
+      - MYSQL_USER=aubouleau_user
+      - MYSQL_PASSWORD=some_password
+      - MYSQL_ROOT_PASSWORD=some_root_password
+    volumes:
+      - ./deploy/create_db.sql:/docker-entrypoint-initdb.d/create_db.sql
+  web:
+    build: .
+    command: gunicorn django_app.wsgi --bind 0.0.0.0:8000
+    ports:
+      - "5050:8000"
+    volumes:
+      - .:/app
+    depends_on:
+      - aubouleau-db
+  phpmyadmin:
+    image: phpmyadmin
+    environment:
+      PMA_HOST: aubouleau-db
+      PMA_PORT: 3306
+    ports:
+      - "5080:80"
+    depends_on:
+      - aubouleau-db
+    networks:
+      - default
