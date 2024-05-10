@@ -12,7 +12,7 @@ services:
       - ./deploy/create_db.sql:/docker-entrypoint-initdb.d/create_db.sql
   web:
     build: .
-    command: gunicorn django_app.wsgi --bind 0.0.0.0:8000
+    command: gunicorn aubouleau.wsgi --bind 0.0.0.0:8000
     ports:
       - "5050:8000"
     volumes:
