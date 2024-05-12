@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Floors of building {{ building.name }}</title>
+    </head>
+    <body>
+        <h1>Placeholder view for floors of {{ building.name }}</h1>
+        <ul>
+        {% if floors %}
+        	{% for floor in floors %}
+        	<li><a href="{% url "aubouleau_web:floor_detail" building.id floor.id %}">{{ floor }}</a></li>
+            {% endfor %}
+        {% else %}
+            <p>No floors to show.</p>
+        {% endif %}
+        </ul>
+    </body>
+</html>

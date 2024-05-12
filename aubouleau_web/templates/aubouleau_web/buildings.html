@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Aubouleau buildings</title>
+    </head>
+    <body>
+        <h1>Buildings placeholder view</h1>
+        <ul>
+        {% if buildings %}
+        	{% for building in buildings %}
+        	<li><a href="{% url "aubouleau_web:building_detail" building.id %}">{{ building }}</a></li>
+            {% endfor %}
+        {% else %}
+            <p>No buildings to show.</p>
+        {% endif %}
+        </ul>
+    </body>
+</html>
