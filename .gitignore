@@ -3,3 +3,6 @@
 
 # PyCharm
 .idea/
+
+# NodeJS
+node_modules
