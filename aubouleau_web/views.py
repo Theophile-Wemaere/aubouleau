@@ -1,7 +1,7 @@
 from django.http import HttpResponse
 from django.shortcuts import render
 
-from .models import Building, Floor, Room
+from .models import *
 
 
 def index(request):
@@ -43,3 +43,10 @@ def room_detail(request, building_id, room_id):
     building = Building.objects.get(pk=building_id)
     room = Room.objects.get(pk=room_id)
     return render(request, "aubouleau_web/room_detail.html", {"building": building, "room": room})
+
+
+def building_equipment(request, building_id):
+    building = Building.objects.get(pk=building_id)
+    # TODO: replace with method from the Building model
+    equipment_list = Equipment.objects.all()
+    return render(request, 'aubouleau_web/building_equipment.html', {"building": building, "equipment_list": equipment_list})
