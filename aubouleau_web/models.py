@@ -8,13 +8,13 @@ class Building(models.Model):
     def __str__(self):
         return f'{self.name}'
 
-    def get_total_floors(self):
+    def count_floors(self):
         return self.floor_set.count()
 
-    def get_total_rooms(self):
+    def count_rooms(self):
         total_rooms = 0
         for floor in self.floor_set.all():
-            total_rooms += floor.get_total_rooms()
+            total_rooms += floor.count_rooms()
         return total_rooms
 
     def get_all_rooms(self):
@@ -30,7 +30,7 @@ class Floor(models.Model):
     def __str__(self):
         return f'{self.name} (nº{self.number})'
 
-    def get_total_rooms(self):
+    def count_rooms(self):
         return self.room_set.count()
 
     def get_all_rooms(self):
