@@ -45,31 +45,3 @@ class Room(models.Model):
 
     def __str__(self):
         return f'{self.name} (nº{self.number})'
-
-
-class EquipmentType(models.Model):
-    name = models.CharField(max_length=50)
-    manufacturer = models.CharField(max_length=80)
-    model = models.CharField(max_length=100)
-    created_at = models.DateField(auto_now_add=True)
-
-    def __str__(self):
-        return '{} - {}'.format(self.name, self.manufacturer)
-
-    class Meta:
-        verbose_name = "Equipment Type"
-        verbose_name_plural = "Equipment Types"
-
-
-class Equipment(models.Model):
-    name = models.CharField(max_length=50)
-    room = models.ForeignKey(Room, on_delete=models.SET_NULL, null=True, blank=True)
-    type = models.ForeignKey(EquipmentType, on_delete=models.SET_NULL, null=True, blank=False)
-    created_at = models.DateField(auto_now_add=True)
-
-    def __str__(self):
-        return '{} - {}'.format(self.name, self.type)
-
-    class Meta:
-        verbose_name = "Equipment"
-        verbose_name_plural = "Equipment"
