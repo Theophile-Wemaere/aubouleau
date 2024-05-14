@@ -5,6 +5,20 @@ This repository contains the code of the `Aubouleau` project. As of now, the pro
 The `Aubouleau` project allows students of ISEP to visualize various information regarding rooms and equipment available in the different ISEP facilities.
 This project also allows ISEP personnel to manage the content displayed on the web application as well as visualizing different problems that may have been reported by the students.
 
+## Development
+
+To start developing on this project, start by cloning this repository.
+
+The user interface (UI) uses [tailwindcss](https://tailwindcss.com/) and [Flowbite](https://flowbite.com/), which are provided though `npm`. You can install these dependencies by first installing `nodejs` and `npm` and then typing:
+```shell
+npm install
+```
+
+Once the dependencies have been installed, you can instruct `tailwindcss` to watch for changes in Django templates so that it dynamically generates the `style.css` file, which contains the entire styling of the werb application:
+```shell
+npx tailwindcss -i aubouleau_web/static/aubouleau_web/input.css -o aubouleau_web/static/aubouleau_web/style.css --watch
+```
+
 ## Deployment
 
 As of now, the application can be deployed as a `Docker Compose` stack. The provided `docker-compose.yml` allows the creation of multiple containers that include everything needed to deploy the `Aubouleau` web application:
