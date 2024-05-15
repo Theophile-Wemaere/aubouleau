@@ -152,8 +152,8 @@
 - model: aubouleau_web.Room
   pk: 8
   fields:
-    number: "212"
-    name: "L212"
+    number: "206"
+    name: "L206"
     created_at: "2024-05-13 12:00:00"
     floor: 10
 - model: aubouleau_web.Room
@@ -178,7 +178,7 @@
     created_at: "2024-05-13 12:00:00"
     floor: 11
 - model: aubouleau_web.Room
-  pk: 10
+  pk: 12
   fields:
     number: "416"
     name: "L416"
