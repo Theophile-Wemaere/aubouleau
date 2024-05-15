@@ -27,7 +27,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="flex flex-wrap gap-x-20 gap-y-12 flex-grow items-center justify-center px-4" id="content">
+<div class="flex flex-wrap gap-x-20 gap-y-12 flex-grow items-center justify-center px-4 pb-4" id="content">
     {% if buildings %}
         {% for building in buildings %}
             <a href="{% url 'aubouleau_web:building_detail' building.id %}" class="flex flex-col items-center bg-white border border-gray-200 rounded-lg shadow min-w-96 max-h-52 md:flex-row md:max-w-xl hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700">
