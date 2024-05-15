@@ -28,7 +28,7 @@ As of now, the application can be deployed as a `Docker Compose` stack. The prov
 
 To create the `Docker Compose` stack, simply run the following command in a terminal:
 ```shell
-$ docker-compose up -d
+docker compose up -d
 ```
 
 The following ports will be exposed on the host machine :
