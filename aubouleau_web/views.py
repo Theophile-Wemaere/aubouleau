@@ -39,7 +39,7 @@ def rooms(request, building_name):
     return render(request, "aubouleau_web/rooms.html", {"building": building, "rooms": rooms_list})
 
 
-def room_detail(request, building_name, room_id):
+def room_detail(request, building_name, room_number):
     building = Building.objects.get(name=building_name)
-    room = Room.objects.get(pk=room_id)
+    room = Room.objects.get(number=room_number)
     return render(request, "aubouleau_web/room_detail.html", {"building": building, "room": room})

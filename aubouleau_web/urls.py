@@ -25,5 +25,5 @@ urlpatterns = [
     path("<str:building_name>/rooms/", views.rooms, name="rooms"),
     # /[building_id]/rooms/[room_id]
     # Example: https://aubouleau.fr/ndc/rooms/l012
-    path("<str:building_name>/rooms/<int:room_id>/", views.room_detail, name="room-detail"),
+    path("<str:building_name>/rooms/<str:room_number>/", views.room_detail, name="room-detail"),
 ]
