@@ -9,9 +9,10 @@
     </head>
     <body>
         <div class="flex flex-col">
+            {# Navbar #}
             <nav class="bg-white border-gray-200 dark:bg-gray-900">
                 <div class="flex flex-wrap items-center justify-between mx-auto p-4">
-                    <a href="https://flowbite.com/" class="flex items-center space-x-3 rtl:space-x-reverse">
+                    <a href="{% url 'aubouleau_web:index' %}" class="flex items-center space-x-3 rtl:space-x-reverse">
                         <img src="{% static 'aubouleau_web/images/aubouleau.png' %}" class="h-8" alt="Flowbite Logo"/>
                         <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">Aubouleau</span>
                     </a>
@@ -54,7 +55,9 @@
                     </div>
                 </div>
             </nav>
+            {# Page content wrapper (sidebar + page content) #}
             <div class="flex flex-row" id="page-content-wrapper">
+                {# Sidebar #}
                 <div id="sidebar-wrapper">
                     <button data-drawer-target="separator-sidebar" data-drawer-toggle="separator-sidebar" aria-controls="separator-sidebar" type="button" class="inline-flex items-center p-2 mt-2 ms-3 text-sm text-gray-500 rounded-lg sm:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600">
                         <span class="sr-only">Open sidebar</span>
@@ -86,8 +89,13 @@
                                         </svg>
                                     </button>
                                     <ul id="dropdown-buildings" class="hidden py-2 space-y-2">
-                                        <li> <a href="#" class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">NDC</a> </li>
-                                        <li> <a href="#" class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">NDL</a></li>
+                                        {% if sidebar_buildings %}
+                                        	{% for building in sidebar_buildings %}
+                                        	    <li><a href="{% url 'aubouleau_web:building_detail' building_name=building.name %}" class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">{{ building.name }}</a></li>
+                                            {% endfor %}
+                                        {% else %}
+                                            <li class="flex items-center w-full p-2 text-gray-500 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">No buildings</li>
+                                        {% endif %}
                                     </ul>
                                 </li>
                                 <li>
@@ -102,9 +110,13 @@
                                         </svg>
                                     </button>
                                     <ul id="dropdown-floors" class="hidden py-2 space-y-2">
-                                        <li> <a href="#" class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">NDC - Floor 0</a> </li>
-                                        <li> <a href="#" class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">NDC - Floor 1</a></li>
-                                        <li> <a href="#" class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">NDL - Floor 4</a></li>
+                                        {% if sidebar_floors %}
+                                        	{% for floor in sidebar_floors %}
+                                        		<li><a href="{% url 'aubouleau_web:floor_detail' building_name=floor.building.name floor_number=floor.number %}" class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">{{ floor.building.name }} - {{ floor.name }}</a></li>
+                                        	{% endfor %}
+                                        {% else %}
+                                            <li class="flex items-center w-full p-2 text-gray-500 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">No floors</li>
+                                        {% endif %}
                                     </ul>
                                 </li>
                                 <li>
@@ -118,9 +130,13 @@
                                         </svg>
                                     </button>
                                     <ul id="dropdown-rooms" class="hidden py-2 space-y-2">
-                                        <li><a href="#" class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">N16A</a></li>
-                                        <li><a href="#" class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">N16B</a></li>
-                                        <li><a href="#" class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">L012</a></li>
+                                        {% if sidebar_rooms %}
+                                        	{% for room in sidebar_rooms %}
+                                                <li><a href="{% url 'aubouleau_web:room-detail' building_name=room.floor.building.name room_number=room.number %}" class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">{{ room.number }}</a></li>
+                                            {% endfor %}
+                                        {% else %}
+                                            <li class="flex items-center w-full p-2 text-gray-500 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">No rooms</li>
+                                        {% endif %}
                                     </ul>
                                 </li>
                                 <li>
@@ -162,6 +178,7 @@
                         </div>
                     </aside>
                 </div>
+                {# Page content #}
                 <div class="flex-col flex-grow" id="content-wrapper">
                     <div class="flex justify-center my-5" id="breadcrumb-wrapper">
                         {# Breadcrumb #}
