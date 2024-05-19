@@ -31,9 +31,7 @@
     {% if buildings %}
         {% for building in buildings %}
             <a href="{% url 'aubouleau_web:building_detail' building.id %}" class="flex flex-col items-center bg-white border border-gray-200 rounded-lg shadow min-w-96 max-h-52 md:flex-row md:max-w-xl hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700">
-                {# TODO: It would be better to include the image (or its path) as an attribute of the Building itself so that it can be edited through the application. #}
-                {# This would also allow to use images with different extensions (right now, only JPG images are supported because it's hardcoded. #}
-                <img class="object-cover w-full rounded-t-lg h-96 md:h-52 md:w-48 md:rounded-none md:rounded-s-lg" src="{% get_static_prefix %}aubouleau_web/images/{{ building.name }}.jpg" alt="{{ building.name }}-picture">
+                <img class="object-cover w-full rounded-t-lg h-96 md:h-52 md:w-48 md:rounded-none md:rounded-s-lg" src="{% get_static_prefix %}aubouleau_web/images/{{ building.picture }}" alt="{{ building.name }}-picture">
                 <div class="flex flex-col justify-between p-4 leading-normal gap-3">
                     <h5 class="text-xl font-bold underline tracking-tight text-gray-900 dark:text-white">{{ building.name }}</h5>
                     <ul class="flex flex-col gap-3">

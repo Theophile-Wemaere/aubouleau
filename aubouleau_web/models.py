@@ -2,7 +2,8 @@ from django.db import models
 
 
 class Building(models.Model):
-    name = models.CharField(max_length=64)
+    name = models.CharField(max_length=64, unique=True)
+    picture = models.CharField(max_length=4096, blank=True, default="")
     created_at = models.DateTimeField("Creation timestamp")
 
     def __str__(self):
@@ -24,6 +25,7 @@ class Building(models.Model):
 class Floor(models.Model):
     number = models.IntegerField("Floor number")
     name = models.CharField(max_length=64)
+    picture = models.CharField(max_length=4096, blank=True, default="")
     created_at = models.DateTimeField("Creation timestamp")
     building = models.ForeignKey(Building, on_delete=models.CASCADE)
 
@@ -38,8 +40,10 @@ class Floor(models.Model):
 
 
 class Room(models.Model):
-    number = models.CharField(max_length=8)
+    number = models.CharField(max_length=8, unique=True)
     name = models.CharField(max_length=64)
+    seats = models.IntegerField("Number of seats")
+    picture = models.CharField(max_length=4096, blank=True, default="")
     created_at = models.DateTimeField("Creation timestamp")
     floor = models.ForeignKey(Floor, on_delete=models.CASCADE)
 
