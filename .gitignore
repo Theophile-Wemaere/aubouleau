@@ -1,6 +1,9 @@
 **/__pycache__/
 .env
 
+# Django
+aubouleau_web/migrations/
+
 # PyCharm
 .idea/
 
