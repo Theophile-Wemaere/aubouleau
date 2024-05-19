@@ -19,7 +19,7 @@ urlpatterns = [
     path("<str:building_name>/floors/", views.floors, name="floors"),
     # /[building_id]/floors/[floor_id]
     # Example: https://aubouleau.fr/ndc/floors/0
-    path("<str:building_name>/floors/<int:floor_id>/", views.floor_detail, name="floor_detail"),
+    path("<str:building_name>/floors/<int:floor_number>/", views.floor_detail, name="floor_detail"),
     # /[building_id]/rooms
     # Example: https://aubouleau.fr/ndc/rooms
     path("<str:building_name>/rooms/", views.rooms, name="rooms"),

@@ -38,6 +38,12 @@ class Floor(models.Model):
     def get_all_rooms(self):
         return self.room_set.all()
 
+    class Meta:
+        # A Building can't have two (or more) floors with the same number
+        # This guarantees that, for instance, the URL aubouleau.fr/NDC/floors/1 will ALWAYS return a single floor
+        # (since the Building NDC can only have one floor with the number 1)
+        unique_together = ("number", "building")
+
 
 class Room(models.Model):
     number = models.CharField(max_length=8, unique=True)
