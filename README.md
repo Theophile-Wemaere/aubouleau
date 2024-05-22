@@ -14,7 +14,7 @@ The user interface (UI) uses [tailwindcss](https://tailwindcss.com/) and [Flowbi
 npm install
 ```
 
-Once the dependencies have been installed, you can instruct `tailwindcss` to watch for changes in Django templates so that it dynamically generates the `style.css` file, which contains the entire styling of the werb application:
+Once the dependencies have been installed, you can instruct `tailwindcss` to watch for changes in Django templates so that it dynamically generates the `style.css` file, which contains the entire styling of the web application:
 ```shell
 npx tailwindcss -i aubouleau_web/static/aubouleau_web/input.css -o aubouleau_web/static/aubouleau_web/style.css --watch
 ```
@@ -25,26 +25,26 @@ As of now, the application can be deployed as a `Docker Compose` stack. The prov
 - A `gunicorn` container, which hosts the `aubouleau_web` django application
 - A `mariadb` container, which is the backend database used by `Aubouleau`
 - A `phpmyadmin` container, which is a web interface for `MariaDB`
+- An `NGINX` container, which proxies requests to `gunicorn` as well as serving static content.
 
 To create the `Docker Compose` stack, simply run the following command in a terminal:
 ```shell
-docker compose up -d
+sudo docker compose up -d
 ```
 
 The following ports will be exposed on the host machine :
 
-- `5050`: `gunicorn`. To access the application, open http://localhost:5050 in your browser.
+- `8888`: `NGINX`. To access the application, open http://localhost:5050 in your browser.
 - `5080`: `phpmyadmin`. To access the `phpmyadmin` web interface, open http://localhost:5080 in your browser.
-- `3306`: `MariaDB`
 
 To completely delete the stack and remove all created containers, run the following command in a terminal:
 ```shell
-docker compose down -v --remove-orphans
+sudo docker compose down -v --remove-orphans
 ```
 
 **Note that, this command will also remove all the docker volumes associated with the stack. That means that all the data stored in `MariaDB` will be lost.**
 
 If you wish to remove the images pulled and created by `Aubouleau`, run the following command in a terminal:
 ```shell
-docker image rm aubouleau-web phpmyadmin mariadb
+sudo docker image rm aubouleau-web:1.0 phpmyadmin:5.2.1 mariadb:11.3.2 nginx:1.26.0
 ```
