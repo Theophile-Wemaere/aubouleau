@@ -1,32 +1,68 @@
 services:
+  # MariaDB
   aubouleau-db:
-    image: mariadb:latest
-    ports:
-      - "3306:3306"
+    container_name: aubouleau-db
+    image: mariadb:11.3.2
+    expose:
+      - 3306
     environment:
-      - MYSQL_DATABASE=aubouleau
-      - MYSQL_USER=aubouleau_user
-      - MYSQL_PASSWORD=some_password
-      - MYSQL_ROOT_PASSWORD=some_root_password
-    volumes:
-      - ./deploy/create_db.sql:/docker-entrypoint-initdb.d/create_db.sql
-  web:
+      # Make sure to use secure credentials in production
+      - MARIADB_DATABASE=aubouleau
+      - MARIADB_USER=aubouleau
+      - MARIADB_PASSWORD=aubouleau
+      - MARIADB_ROOT_PASSWORD=root
+    healthcheck:
+      interval: 3s
+      retries: 10
+      test: ["CMD", "healthcheck.sh", "--su-mysql", "--connect", "--innodb_initialized"]
+      timeout: 5s
+  # Aubouleau web application
+  aubouleau-web:
+    container_name: aubouleau-web
     build: .
+    image: aubouleau-web:1.0
     command: gunicorn aubouleau.wsgi --bind 0.0.0.0:8000
-    ports:
-      - "5050:8000"
-    volumes:
-      - .:/app
+    expose:
+      - 8000
+    environment:
+      # Set to 0 for production
+      DEBUG: 1
+      # Make sure to generate a new private key for production use
+      # See: https://docs.djangoproject.com/en/5.0/topics/signing/
+      SECRET_KEY: django-insecure-78oyl4+o_!+xx0hj(x1xm7*w8j1iv2et^x)jxnqmo7#z8scj(4
+      DJANGO_ALLOWED_HOSTS: localhost 127.0.0.1 [::1]
+      DB_ENGINE: django.db.backends.mysql
+      DB_HOST: aubouleau-db
+      DB_PORT: 3306
+      # Make sure that these credentials match the ones in the aubouleau-db service
+      DB_NAME: aubouleau
+      DB_USERNAME: aubouleau
+      DB_PASSWORD: aubouleau
     depends_on:
-      - aubouleau-db
+      aubouleau-db:
+        condition: service_healthy
+  # phpmyadmin
   phpmyadmin:
-    image: phpmyadmin
+    container_name: aubouleau-phpmyadmin
+    image: phpmyadmin:5.2.1
     environment:
       PMA_HOST: aubouleau-db
       PMA_PORT: 3306
     ports:
       - "5080:80"
     depends_on:
-      - aubouleau-db
-    networks:
-      - default
+      aubouleau-db:
+        condition: service_healthy
+  # NGINX
+  nginx:
+    container_name: aubouleau-nginx
+    image: nginx:1.26.0
+    ports:
+      - "8888:80"
+    volumes:
+      # Config file
+      - ./deploy/nginx.conf:/etc/nginx/nginx.conf:ro
+      # Static files
+      - ./aubouleau_web/static:/static:ro
+    depends_on:
+      - aubouleau-web
