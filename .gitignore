@@ -1,5 +1,11 @@
 **/__pycache__/
 .env
 
+# Django
+aubouleau_web/migrations/
+
 # PyCharm
 .idea/
+
+# NodeJS
+node_modules

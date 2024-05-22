@@ -1,0 +1,224 @@
+# Buildings
+- model: aubouleau_web.Building
+  pk: 1
+  fields:
+    name: "NDC"
+    picture: "NDC.jpg"
+    created_at: "2024-05-13 12:00:00"
+- model: aubouleau_web.Building
+  pk: 2
+  fields:
+    name: "NDL"
+    picture: "NDL.jpg"
+    created_at: "2024-05-13 12:00:00"
+
+# Floors
+# NDC
+- model: aubouleau_web.Floor
+  pk: 1
+  fields:
+    number: 0
+    name: "Ground Floor"
+    picture: ""
+    created_at: "2024-05-13 12:00:00"
+    building: 1
+- model: aubouleau_web.Floor
+  pk: 2
+  fields:
+    number: 1
+    name: "Floor 1"
+    picture: ""
+    created_at: "2024-05-13 12:00:00"
+    building: 1
+- model: aubouleau_web.Floor
+  pk: 3
+  fields:
+    number: 2
+    name: "Floor 2"
+    picture: ""
+    created_at: "2024-05-13 12:00:00"
+    building: 1
+- model: aubouleau_web.Floor
+  pk: 4
+  fields:
+    number: 3
+    name: "Floor 3"
+    picture: ""
+    created_at: "2024-05-13 12:00:00"
+    building: 1
+- model: aubouleau_web.Floor
+  pk: 5
+  fields:
+    number: 4
+    name: "Floor 4"
+    picture: ""
+    created_at: "2024-05-13 12:00:00"
+    building: 1
+- model: aubouleau_web.Floor
+  pk: 6
+  fields:
+    number: 5
+    name: "Floor 5"
+    picture: ""
+    created_at: "2024-05-13 12:00:00"
+    building: 1
+- model: aubouleau_web.Floor
+  pk: 7
+  fields:
+    number: 6
+    name: "Floor 6"
+    picture: ""
+    created_at: "2024-05-13 12:00:00"
+    building: 1
+# NDL
+- model: aubouleau_web.Floor
+  pk: 8
+  fields:
+    number: 0
+    name: "Ground Floor"
+    picture: ""
+    created_at: "2024-05-13 12:00:00"
+    building: 2
+- model: aubouleau_web.Floor
+  pk: 9
+  fields:
+    number: 1
+    name: "Floor 1"
+    picture: ""
+    created_at: "2024-05-13 12:00:00"
+    building: 2
+- model: aubouleau_web.Floor
+  pk: 10
+  fields:
+    number: 2
+    name: "Floor 2"
+    picture: ""
+    created_at: "2024-05-13 12:00:00"
+    building: 2
+- model: aubouleau_web.Floor
+  pk: 11
+  fields:
+    number: 3
+    name: "Floor 3"
+    picture: ""
+    created_at: "2024-05-13 12:00:00"
+    building: 2
+- model: aubouleau_web.Floor
+  pk: 12
+  fields:
+    number: 4
+    name: "Floor 4"
+    picture: ""
+    created_at: "2024-05-13 12:00:00"
+    building: 2
+# Rooms
+# NDC
+- model: aubouleau_web.Room
+  pk: 1
+  fields:
+    number: "N16A"
+    name: "Grande salle de cours"
+    seats: 30
+    picture: "N16A.png"
+    created_at: "2024-05-13 12:00:00"
+    floor: 2
+- model: aubouleau_web.Room
+  pk: 2
+  fields:
+    number: "N16B"
+    name: "Grande salle de cours"
+    seats: 30
+    picture: ""
+    created_at: "2024-05-13 12:00:00"
+    floor: 2
+- model: aubouleau_web.Room
+  pk: 3
+  fields:
+    number: "N24"
+    name: "Salle de cours"
+    seats: 30
+    picture: ""
+    created_at: "2024-05-13 12:00:00"
+    floor: 3
+- model: aubouleau_web.Room
+  pk: 4
+  fields:
+    number: "N34"
+    name: "Salle de cours"
+    seats: 30
+    picture: ""
+    created_at: "2024-05-13 12:00:00"
+    floor: 4
+- model: aubouleau_web.Room
+  pk: 5
+  fields:
+    number: "N44"
+    name: "Salle de cours"
+    seats: 30
+    picture: ""
+    created_at: "2024-05-13 12:00:00"
+    floor: 5
+# NDL
+- model: aubouleau_web.Room
+  pk: 6
+  fields:
+    number: "L012"
+    name: "Amphithéâtre"
+    seats: 30
+    picture: "L012.png"
+    created_at: "2024-05-13 12:00:00"
+    floor: 8
+- model: aubouleau_web.Room
+  pk: 7
+  fields:
+    number: "L114"
+    name: "Salle de cours"
+    seats: 30
+    picture: ""
+    created_at: "2024-05-13 12:00:00"
+    floor: 9
+- model: aubouleau_web.Room
+  pk: 8
+  fields:
+    number: "L206"
+    name: "Salle de cours"
+    seats: 30
+    picture: "L206.png"
+    created_at: "2024-05-13 12:00:00"
+    floor: 10
+- model: aubouleau_web.Room
+  pk: 9
+  fields:
+    number: "L213"
+    name: "Salle d'APP"
+    seats: 30
+    picture: "L213.png"
+    created_at: "2024-05-13 12:00:00"
+    floor: 10
+- model: aubouleau_web.Room
+  pk: 10
+  fields:
+    number: "L311"
+    name: "Salle de cours"
+    seats: 30
+    picture: ""
+    created_at: "2024-05-13 12:00:00"
+    floor: 11
+- model: aubouleau_web.Room
+  pk: 11
+  fields:
+    number: "L313"
+    name: "Salle de cours"
+    seats: 30
+    picture: ""
+    created_at: "2024-05-13 12:00:00"
+    floor: 11
+- model: aubouleau_web.Room
+  pk: 12
+  fields:
+    number: "L416"
+    name: "Auditorium"
+    seats: 30
+    picture: "L416.png"
+    created_at: "2024-05-13 12:00:00"
+    floor: 12
