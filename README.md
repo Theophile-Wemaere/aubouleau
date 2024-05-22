@@ -34,7 +34,7 @@ sudo docker compose up -d
 
 The following ports will be exposed on the host machine :
 
-- `8888`: `NGINX`. To access the application, open http://localhost:5050 in your browser.
+- `8888`: `NGINX`. To access the application, open http://localhost:8888 in your browser.
 - `5080`: `phpmyadmin`. To access the `phpmyadmin` web interface, open http://localhost:5080 in your browser.
 
 To completely delete the stack and remove all created containers, run the following command in a terminal:
