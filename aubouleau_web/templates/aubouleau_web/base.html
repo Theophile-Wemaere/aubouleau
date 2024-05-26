@@ -223,6 +223,11 @@
                         </nav>
                         {% endblock %}
                     </div>
+                    <div class="flex flex-col justify-center items-center mb-5" id="navtabs-wrapper">
+                        {# Navigation tabs #}
+                        {% block navtabs %}
+                        {% endblock %}
+                    </div>
                     {% block content %}
                     <div class="flex flex-wrap gap-y-12 flex-grow items-center justify-center px-4" id="content">
                         <h1 class="text-5xl text-center font-bold text-emerald-500">Base template content block</h1>
