@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 
 from .models import Building, Floor, Room
 
@@ -29,7 +29,7 @@ def building_detail(request, building_name):
     :param building_name: The name of the :py:class:`Building` to show the details for.
     :return: An HTTP response containing the detailed information of the relevant :py:class:`Building`.
     """
-    building = Building.objects.get(name=building_name)
+    building = get_object_or_404(Building, name=building_name)
     floors_list = building.floor_set.all()
     rooms_list = building.get_all_rooms()
     return render(request, "aubouleau_web/building_detail.html", {"building": building, "floors": floors_list, "rooms": rooms_list})
