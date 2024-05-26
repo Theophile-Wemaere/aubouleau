@@ -44,7 +44,7 @@ def building_floors(request, building_name):
     """
     building = Building.objects.get(name=building_name)
     floors_list = building.floor_set.all()
-    return render(request, "aubouleau_web/floors.html", {"building": building, "floors": floors_list})
+    return render(request, "aubouleau_web/building_floors.html", {"building": building, "floors": floors_list})
 
 
 def floor_detail(request, building_name, floor_number):
@@ -84,7 +84,7 @@ def building_rooms(request, building_name):
     """
     building = Building.objects.get(name=building_name)
     rooms_list = building.get_all_rooms()
-    return render(request, "aubouleau_web/rooms.html", {"building": building, "rooms": rooms_list})
+    return render(request, "aubouleau_web/building_rooms.html", {"building": building, "rooms": rooms_list})
 
 
 def room_detail(request, building_name, room_number):
