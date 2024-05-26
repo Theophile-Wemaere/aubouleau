@@ -61,6 +61,20 @@ def floor_detail(request, building_name, floor_number):
     return render(request, "aubouleau_web/floor_detail.html", {"building": building, "floor": floor, "rooms": rooms_list})
 
 
+def floor_rooms(request, building_name, floor_number):
+    """
+    Displays the list of all the :py:class:`Room` of the relevant :py:class:`Floor`.
+    :param request: The HTTP request.
+    :param building_name: The name of the :py:class:`Building` the :py:class:`Floor` belongs to.
+    :param floor_number: The number of the :py:class:`Floor` to show the details for.
+    :return: An HTTP response containing a page with all the available rooms of the relevant :py:class:`Floor`.
+    """
+    building = Building.objects.get(name=building_name)
+    floor = building.floor_set.get(number=floor_number)
+    rooms_list = floor.room_set.all()
+    return render(request, "aubouleau_web/floor_rooms.html", {"building": building, "floor": floor, "rooms": rooms_list})
+
+
 def rooms(request, building_name):
     """
     Displays the list of all the :py:class:`Room` of the relevant :py:class:`Building`.
