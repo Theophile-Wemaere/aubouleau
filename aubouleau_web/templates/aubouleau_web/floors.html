@@ -38,8 +38,8 @@
 <div class="flex flex-col max-w-xl text-sm font-medium text-center text-gray-500 border-b border-gray-200 dark:text-gray-400 dark:border-gray-700">
     <ul class="flex flex-wrap gap-x-8 -mb-px">
         <li class="me-2"><a href="{% url 'aubouleau_web:building_detail' building_name=building.name %}" class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300">Everything</a></li>
-        <li class="me-2"><a href="{% url 'aubouleau_web:floors' building_name=building.name %}" class="inline-block p-4 text-green-500 border-b-2 border-green-500 rounded-t-lg active dark:text-green-500 dark:border-green-500" aria-current="page">Floors</a></li>
-        <li class="me-2"><a href="{% url 'aubouleau_web:rooms' building_name=building.name %}" class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300">Rooms</a></li>
+        <li class="me-2"><a href="{% url 'aubouleau_web:building_floors' building_name=building.name %}" class="inline-block p-4 text-green-500 border-b-2 border-green-500 rounded-t-lg active dark:text-green-500 dark:border-green-500" aria-current="page">Floors</a></li>
+        <li class="me-2"><a href="{% url 'aubouleau_web:building_rooms' building_name=building.name %}" class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300">Rooms</a></li>
         <li class="me-2"><a href="#" class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300">Equipment</a></li>
     </ul>
 </div>

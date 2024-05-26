@@ -35,7 +35,7 @@ def building_detail(request, building_name):
     return render(request, "aubouleau_web/building_detail.html", {"building": building, "floors": floors_list, "rooms": rooms_list})
 
 
-def floors(request, building_name):
+def building_floors(request, building_name):
     """
     Displays the list of all the :py:class:`Floor` of the relevant :py:class:`Building`.
     :param request: The HTTP request.
@@ -75,7 +75,7 @@ def floor_rooms(request, building_name, floor_number):
     return render(request, "aubouleau_web/floor_rooms.html", {"building": building, "floor": floor, "rooms": rooms_list})
 
 
-def rooms(request, building_name):
+def building_rooms(request, building_name):
     """
     Displays the list of all the :py:class:`Room` of the relevant :py:class:`Building`.
     :param request: The HTTP request.
