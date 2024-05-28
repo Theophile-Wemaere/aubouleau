@@ -25,6 +25,8 @@ services:
     expose:
       - 8000
     environment:
+      # Defines the timezone in the container
+      TZ: 'Europe/Paris'
       # Set to 0 for production
       DEBUG: 1
       # Make sure to generate a new private key for production use
@@ -38,6 +40,10 @@ services:
       DB_NAME: aubouleau
       DB_USERNAME: aubouleau
       DB_PASSWORD: aubouleau
+      # Hyperplanning
+      HP_USERNAME: hyperplanning_user
+      # HP_PASSWORD must be in base64 !
+      HP_PASSWORD: hyperplanning_password_in_base64
     depends_on:
       aubouleau-db:
         condition: service_healthy

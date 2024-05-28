@@ -36,6 +36,7 @@ ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS").split(" ")
 
 INSTALLED_APPS = [
     'aubouleau_web.apps.AubouleauWebConfig',
+    'django_crontab',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -132,3 +133,10 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Cronjobs
+
+CRONJOBS = [
+    # Every 6 hours (https://crontab.guru/every-6-hours)
+    ('0 */6 * * *', 'aubouleau_web.models.update_time_slots', '> /tmp/update_time_slots_cronjob.log 2>&1'),
+]
