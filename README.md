@@ -31,6 +31,10 @@ DB_PORT=3306
 DB_NAME=aubouleau
 DB_USERNAME=[name of the database user]
 DB_PASSWORD=[password of the database user]
+# Hyperplanning
+HP_USERNAME=[Hyperplanning username]
+# HP_PASSWORD must be in base64 ! (make sure NOT to include the newline character)
+HP_PASSWORD=[Hyperplanning password in base64]
 ```
 
 ### Setting up `tailwindcss`

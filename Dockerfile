@@ -6,6 +6,9 @@ ENV PYTHONDONTWRITEBYTECODE 1
 # Prevents Python from buffering stdout and stderr (equivalent to python -u option)
 ENV PYTHONUNBUFFERED 1
 
+# APT dependencies
+RUN apt-get update && apt-get -y install cron firefox-esr
+
 # Python dependencies
 RUN pip install --upgrade pip
 COPY ./requirements.txt .

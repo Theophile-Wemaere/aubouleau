@@ -1,4 +1,12 @@
+import django.utils.timezone
+import shutil
+from datetime import date, datetime
+
 from django.db import models
+from django.utils import timezone
+from django.utils.timezone import localtime, make_aware, is_naive
+
+from aubouleau_web.hpfetch import CALENDARS_DIRECTORY, download_calendars, get_events_of_day
 
 
 class Building(models.Model):
@@ -48,12 +56,12 @@ class Floor(models.Model):
     building = models.ForeignKey(Building, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f'{self.name} (nº{self.number})'
+        return f'{self.name} ({self.number})'
 
     def count_rooms(self):
         """
         Counts the amount of rooms contained in this :py:class:`Floor`.
-        :return: The number of rooms of this :py:class:`FLoor`.
+        :return: The number of rooms of this :py:class:`Floor`.
         """
         return self.room_set.count()
 
@@ -84,3 +92,49 @@ class Room(models.Model):
 
     def __str__(self):
         return f'{self.name} (nº{self.number})'
+
+
+class TimeSlot(models.Model):
+    """
+    A class representing a time slot in the planning of a :py:class:`Room`.
+    """
+    subject = models.CharField(max_length=512, verbose_name="Subject name")
+    start_time = models.DateTimeField("Start time")
+    end_time = models.DateTimeField("End time")
+    created_at = models.DateTimeField("Creation timestamp")
+    room = models.ForeignKey(Room, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'[{self.room.number}] {localtime(self.start_time).strftime("%d/%m/%Y, %H:%M")} - {localtime(self.end_time).strftime("%H:%M")} | {self.subject}'
+
+    @staticmethod
+    def update_time_slots():
+        # Delete all time slots and delete all the calendars to force re-download
+        TimeSlot.objects.all().delete()
+        shutil.rmtree(CALENDARS_DIRECTORY, ignore_errors=True)
+
+        # Fetch all the room numbers from the DB and download all calendars
+        room_numbers = Room.objects.values_list("number", flat=True)
+        download_calendars(room_numbers)
+
+        for room_number in room_numbers:
+            print(f'Creating time slots for room {room_number}...')
+
+            # If the room does not exist in the application, skip it
+            try:
+                room = Room.objects.get(number=room_number)
+            except Room.DoesNotExist:
+                continue
+
+            events = get_events_of_day(room_number, date.today())
+            for event in events:
+                # Extract the three values from the tuple
+                # All naive datetime objects are converted to aware datetime objects
+                start_datetime, end_datetime, subject = make_aware(event[0]) if is_naive(event[0]) else event[0], make_aware(event[1]) if is_naive(event[1]) else event[1], event[2]
+                room.timeslot_set.create(subject=subject, start_time=start_datetime, end_time=end_datetime, created_at=timezone.now())
+
+
+# This is stupid, but there is no way to make django-crontab call a static method from a class (the function to call must not be in a class)
+# This is due to the way django-crontab parses the settings.CRONJOBS list, see: https://github.com/kraiz/django-crontab/blob/master/django_crontab/crontab.py#L169-L172
+def update_time_slots():
+    TimeSlot.update_time_slots()
