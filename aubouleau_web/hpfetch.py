@@ -85,10 +85,10 @@ def download_calendars(rooms_list: list[str]) -> None:
         # set value to current room and valid
         driver.find_element(By.ID, "GInterface.Instances[1].Instances[1].bouton_Edit").send_keys(room)
         driver.find_element(By.ID, "GInterface.Instances[1].Instances[1].bouton_Edit").send_keys(Keys.ENTER)
-        time.sleep(0.5)
+        time.sleep(1)
         # click on ICAL export button
         driver.find_element(By.ID, "GInterface.Instances[0].Instances[4]_ical").click()
-        time.sleep(0.5)
+        time.sleep(1)
         # get link
         link_element = driver.find_element(By.CSS_SELECTOR, '[aria-label="L\'emploi du temps est récupéré tel qu\'il est et ne sera pas mis à jour automatiquement. Cliquez sur le lien ci-dessous : Exporter l\'emploi du temps au format iCal"]')
         ical_link = str(link_element.get_attribute("href"))
