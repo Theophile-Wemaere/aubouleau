@@ -1,4 +1,3 @@
-import django.utils.timezone
 import shutil
 from datetime import date, datetime
 
@@ -111,6 +110,10 @@ class TimeSlot(models.Model):
     """
     A class representing a time slot in the planning of a :py:class:`Room`.
     """
+    # These variables define the boundaries of the schedule displayed for each room
+    DAY_START = datetime(2000, 1, 1, 8, 0, 0, 0)
+    DAY_END = datetime(2000, 1, 1, 20, 0, 0, 0)
+
     subject = models.CharField(max_length=512, verbose_name="Subject name")
     start_time = models.DateTimeField("Start time")
     end_time = models.DateTimeField("End time")

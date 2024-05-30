@@ -1575,6 +1575,11 @@ input:checked + .toggle-bg {
   width: 100%;
 }
 
+.w-fit {
+  width: -moz-fit-content;
+  width: fit-content;
+}
+
 .min-w-72 {
   min-width: 18rem;
 }
@@ -1593,6 +1598,10 @@ input:checked + .toggle-bg {
 
 .max-w-xl {
   max-width: 36rem;
+}
+
+.max-w-\[50\%\] {
+  max-width: 50%;
 }
 
 .flex-1 {
@@ -1827,6 +1836,10 @@ input:checked + .toggle-bg {
 
 .whitespace-nowrap {
   white-space: nowrap;
+}
+
+.text-wrap {
+  text-wrap: wrap;
 }
 
 .rounded-full {

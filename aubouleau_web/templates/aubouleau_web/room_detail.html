@@ -45,7 +45,7 @@
 {% block content %}
 <div class="flex flex-row flex-grow items-start gap-x-10 justify-between px-10 pb-4" id="content">
     {# First column #}
-    <div class="flex flex-col flex-grow gap-y-10">
+    <div class="flex flex-col flex-grow gap-y-10 max-w-[50%]">
         {# Title wrapper #}
         <div class="flex flex-col gap-y-4">
             <h1 class="text-5xl font-bold text-gray-900">{{ room.number }} - {{ room.name }}</h1>
@@ -57,66 +57,31 @@
             </div>
         </div>
         {# Timeline #}
-        <ol class="relative border-s border-gray-200 dark:border-gray-700">
-            <li class="mb-10 ms-4">
-                <div class="absolute w-3 h-3 bg-gray-200 rounded-full mt-1.5 -start-1.5 border border-white dark:border-gray-900 dark:bg-gray-700"></div>
-                <div class="flex flex-row items-center gap-x-2">
-                    <svg class="w-[20px] h-[20px] text-gray-400 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"></path>
-                    </svg>
-                    <time class="text-sm font-normal leading-none text-gray-400 dark:text-gray-500">8h - 10h</time>
-                </div>
-                <h3 class="text-lg font-bold text-red-600 dark:text-red-600">Occupied</h3>
-                <p class="mb-4 text-base font-normal text-gray-500 dark:text-gray-400">Algorithms and advanced programming</p>
-            </li>
-            <li class="mb-10 ms-4">
-                <div class="absolute w-3 h-3 bg-gray-200 rounded-full mt-1.5 -start-1.5 border border-white dark:border-gray-900 dark:bg-gray-700"></div>
-                <div class="flex flex-row items-center gap-x-2">
-                    <svg class="w-[20px] h-[20px] text-gray-400 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"></path>
-                    </svg>
-                    <time class="text-sm font-normal leading-none text-gray-400 dark:text-gray-500">10h - 14h</time>
-                </div>
-                <h3 class="text-lg font-bold text-green-500 dark:text-green-500">Available</h3>
-                <p class="mb-4 text-base font-normal text-gray-500 dark:text-gray-400">Room is available</p>
-            </li>
-            <li class="mb-10 ms-4">
-                <div class="absolute w-3 h-3 bg-gray-200 rounded-full mt-1.5 -start-1.5 border border-white dark:border-gray-900 dark:bg-gray-700"></div>
-                <div class="flex flex-row items-center gap-x-2">
-                    <svg class="w-[20px] h-[20px] text-gray-400 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"></path>
-                    </svg>
-                    <time class="text-sm font-normal leading-none text-gray-400 dark:text-gray-500">14h - 16h</time>
-                </div>
-                <h3 class="text-lg font-bold text-red-600 dark:text-red-600">Occupied</h3>
-                <p class="mb-4 text-base font-normal text-gray-500 dark:text-gray-400">Algorithms and advanced programming</p>
-            </li>
-            <li class="mb-10 ms-4">
-                <div class="absolute w-3 h-3 bg-gray-200 rounded-full mt-1.5 -start-1.5 border border-white dark:border-gray-900 dark:bg-gray-700"></div>
-                <div class="flex flex-row items-center gap-x-2">
-                    <svg class="w-[20px] h-[20px] text-gray-400 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"></path>
-                    </svg>
-                    <time class="text-sm font-normal leading-none text-gray-400 dark:text-gray-500">16h - 18h</time>
-                </div>
-                <h3 class="text-lg font-bold text-red-600 dark:text-red-600">Occupied</h3>
-                <p class="mb-4 text-base font-normal text-gray-500 dark:text-gray-400">Algorithms and advanced programming</p>
-            </li>
-            <li class="mb-10 ms-4">
-                <div class="absolute w-3 h-3 bg-gray-200 rounded-full mt-1.5 -start-1.5 border border-white dark:border-gray-900 dark:bg-gray-700"></div>
-                <div class="flex flex-row items-center gap-x-2">
-                    <svg class="w-[20px] h-[20px] text-gray-400 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"></path>
-                    </svg>
-                    <time class="text-sm font-normal leading-none text-gray-400 dark:text-gray-500">18h - 20h</time>
-                </div>
-                <h3 class="text-lg font-bold text-green-500 dark:text-green-500">Available</h3>
-                <p class="mb-4 text-base font-normal text-gray-500 dark:text-gray-400">Room is available</p>
-            </li>
-        </ol>
+        <div class="flex flex-col gap-y-4">
+            <h3 class="text-2xl font-bold underline text-gray-900">Today's schedule</h3>
+            <ol class="relative border-s border-gray-200 dark:border-gray-700">
+                {% for time_slot in time_slots %}
+                <li class="mb-10 ms-4">
+                    <div class="absolute w-3 h-3 bg-gray-200 rounded-full mt-1.5 -start-1.5 border border-white dark:border-gray-900 dark:bg-gray-700"></div>
+                    <div class="flex flex-row items-center gap-x-2">
+                        <svg class="w-[20px] h-[20px] text-gray-400 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"></path>
+                        </svg>
+                        <time class="text-sm font-normal leading-none text-gray-400 dark:text-gray-500">{{ time_slot.0.start_time|date:"H:i" }} - {{ time_slot.0.end_time|date:"H:i" }}</time>
+                    </div>
+                    {% if time_slot.1 %}
+                        <h3 class="text-lg font-bold text-green-500 dark:text-green-500">Available</h3>
+                    {% else %}
+                        <h3 class="text-lg font-bold text-red-600 dark:text-red-600">Occupied</h3>
+                    {% endif %}
+                    <p class="w-fit mb-4 text-base font-normal text-wrap text-gray-500 dark:text-gray-500">{{ time_slot.0.subject }}</p>
+                </li>
+                {% endfor %}
+            </ol>
+        </div>
     </div>
     {# Second column #}
-    <div class="flex flex-col flex-grow gap-y-4">
+    <div class="flex flex-col flex-grow gap-y-4 max-w-[50%]">
         {# Status #}
         <a href="#" class="flex flex-col flex-grow px-2 py-6 xl:p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
             <h5 class="mb-2 text-xl xl:text-2xl font-bold text-center tracking-tight text-gray-900 dark:text-white">Status</h5>
