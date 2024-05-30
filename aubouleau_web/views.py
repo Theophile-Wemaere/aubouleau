@@ -1,6 +1,10 @@
-from django.shortcuts import render, get_object_or_404
+from datetime import datetime
 
-from .models import Building, Floor, Room
+from django.shortcuts import render, get_object_or_404
+from django.utils import timezone
+from django.utils.timezone import localtime, make_aware
+
+from .models import Building, Room, TimeSlot
 
 
 def index(request):
@@ -97,4 +101,34 @@ def room_detail(request, building_name, room_number):
     """
     building = Building.objects.get(name=building_name)
     room = Room.objects.get(number=room_number)
-    return render(request, "aubouleau_web/room_detail.html", {"building": building, "room": room})
+    time_slots = room.timeslot_set.all().order_by("start_time")
+
+    # A list containing tuples made of 2 elements: (TimeSlot object, True if the time slot is marked as available, False otherwise)
+    time_slots_list: list[tuple[TimeSlot, bool]] = []
+    previous_time_slot: TimeSlot | None = None
+
+    # If there are no time slots at all, we simply create a single time slot from DAY_START to DAY_END
+    if len(time_slots) == 0:
+        day_start = make_aware(TimeSlot.DAY_START.replace(year=datetime.now().year, month=datetime.now().month, day=datetime.now().day))
+        day_end = make_aware(TimeSlot.DAY_END.replace(year=datetime.now().year, month=datetime.now().month, day=datetime.now().day))
+        time_slots_list.append((TimeSlot(subject="Room is available", start_time=day_start, end_time=day_end, created_at=timezone.now(), room=room), True))
+
+    for time_slot in time_slots:
+        # If the first time slot of the day stars after DAY_START, add a time slot marked as available that "fills the gap"
+        # Since DAY_START is naive, we convert the time_slot start_time to the local time first
+        if not previous_time_slot and localtime(time_slot.start_time).time() > TimeSlot.DAY_START.time():
+            day_start = make_aware(TimeSlot.DAY_START.replace(year=datetime.now().year, month=datetime.now().month, day=datetime.now().day))
+            time_slots_list.append((TimeSlot(subject="Room is available", start_time=day_start, end_time=time_slot.start_time, created_at=timezone.now(), room=time_slot.room), True))
+        # If the time_slot does not start where the previous one ended, "fill the gap" with a time slot marked as available
+        if previous_time_slot and time_slot.start_time > previous_time_slot.end_time:
+            time_slots_list.append((TimeSlot(subject="Room is available", start_time=previous_time_slot.end_time, end_time=time_slot.start_time, created_at=timezone.now(), room=time_slot.room), True))
+        time_slots_list.append((time_slot, False))
+        previous_time_slot = time_slot
+
+    # If the last time slot of the day ends before DAY_END, add a time slot marked as available that "fills the gap"
+    # Since DAY_END is naive, we convert the time_slot end_time to the local time first
+    if previous_time_slot and localtime(previous_time_slot.end_time).time() < TimeSlot.DAY_END.time():
+        day_end = make_aware(TimeSlot.DAY_END.replace(year=datetime.now().year, month=datetime.now().month, day=datetime.now().day))
+        time_slots_list.append((TimeSlot(subject="Room is available", start_time=previous_time_slot.end_time, end_time=day_end, created_at=timezone.now(), room=previous_time_slot.room), True))
+
+    return render(request, "aubouleau_web/room_detail.html", {"building": building, "room": room, "time_slots": time_slots_list})
