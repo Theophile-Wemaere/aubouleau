@@ -93,6 +93,19 @@ class Room(models.Model):
     def __str__(self):
         return f'{self.name} (nº{self.number})'
 
+    def is_available(self) -> bool:
+        """
+        Indicates if a room is available right now.
+
+        :return: True if the room is available, False otherwise.
+        """
+        time_slots = self.timeslot_set.all().order_by("start_time")
+        now = timezone.now()
+        for time_slot in time_slots:
+            if time_slot.start_time <= now <= time_slot.end_time:
+                return False
+        return True
+
 
 class TimeSlot(models.Model):
     """
