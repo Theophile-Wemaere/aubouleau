@@ -7,7 +7,7 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 # APT dependencies
-RUN apt-get update && apt-get -y install cron firefox-esr
+RUN apt-get update && apt-get -y install cron firefox-esr --no-install-recommends
 
 # Python dependencies
 RUN pip install --upgrade pip
