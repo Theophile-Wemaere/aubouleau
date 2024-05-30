@@ -132,6 +132,7 @@ class TimeSlot(models.Model):
                 # All naive datetime objects are converted to aware datetime objects
                 start_datetime, end_datetime, subject = make_aware(event[0]) if is_naive(event[0]) else event[0], make_aware(event[1]) if is_naive(event[1]) else event[1], event[2]
                 room.timeslot_set.create(subject=subject, start_time=start_datetime, end_time=end_datetime, created_at=timezone.now())
+        print("All time slots have been successfully created.")
 
 
 # This is stupid, but there is no way to make django-crontab call a static method from a class (the function to call must not be in a class)
