@@ -11,7 +11,13 @@ python manage.py flush --no-input
 python manage.py makemigrations aubouleau_web
 python manage.py migrate
 python manage.py loaddata initial
-python manage.py crontab add
-# TODO: Find a way to force the cronjob to run on first launch
+# Adds the cronjob to the crontab and stores the result in the variable below
+crontab_add_output=$(python manage.py crontab add)
+echo "$crontab_add_output"
+# The crontab hash is extracted using this (not so great) hack
+cronjob_hash=$(echo $crontab_add_output | cut -d '(' -f2 | cut -d ')' -f1)
+# We then manually start the cronjob once
+echo "Starting cronjob $cronjob_hash..."
+python manage.py crontab run $cronjob_hash
 
 exec "$@"

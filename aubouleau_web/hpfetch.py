@@ -27,13 +27,13 @@ def download_geckodriver() -> None:
     """
     Downloads the geckodriver required by Selenium from the Mozilla GitHub and stores it in the current directory.
     """
-    print("Downloading the Gecko driver from GitHub...")
+    print("[hpfetch] Downloading the Gecko driver from GitHub...")
     r = requests.get(GECKODRIVER_URL)
     with open(f"{GECKODRIVER_PATH}.tar.gz", "wb") as file:
         file.write(r.content)
     os.system(f"tar -xzvf {GECKODRIVER_PATH}.tar.gz -C {TEMP_DIRECTORY}")
     os.remove(f"{GECKODRIVER_PATH}.tar.gz")
-    print("Done !")
+    print("[hpfetch] Done !")
 
 
 # For each room, download its calendar on HP using Selenium
@@ -54,7 +54,7 @@ def download_calendars(rooms_list: list[str]) -> None:
 
     # Create the calendars directory if it does not exist
     if not os.path.exists(CALENDARS_DIRECTORY):
-        print(f"Creating the {CALENDARS_DIRECTORY} directory.")
+        print(f"[hpfetch] Creating the {CALENDARS_DIRECTORY} directory.")
         os.mkdir(CALENDARS_DIRECTORY)
 
     options = Options()
@@ -77,7 +77,7 @@ def download_calendars(rooms_list: list[str]) -> None:
     time.sleep(1)
 
     for room in rooms_list:
-        print(f"Downloading calendar of room {room}...")
+        print(f"[hpfetch] Downloading calendar of room {room}...")
         # click on search bar
         driver.find_element(By.ID, "GInterface.Instances[1].Instances[1].bouton_Edit").click()
         # clear value
