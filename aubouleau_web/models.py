@@ -288,6 +288,13 @@ class TimeSlot(models.Model):
             print("\t[OK]")
         print("All time slots have been successfully created.")
 
+    def is_active_now(self) -> bool:
+        """
+        Indicates if this time slot is currently active right now.
+        :return: True if timezone.now() is during this time slot, False otherwise.
+        """
+        return self.start_time <= timezone.now() <= self.end_time
+
 
 # This is stupid, but there is no way to make django-crontab call a static method from a class (the function to call must not be in a class)
 # This is due to the way django-crontab parses the settings.CRONJOBS list, see: https://github.com/kraiz/django-crontab/blob/master/django_crontab/crontab.py#L169-L172
