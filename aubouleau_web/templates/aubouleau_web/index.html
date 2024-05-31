@@ -146,51 +146,28 @@
             <div class="flex flex-col flex-grow gap-y-6">
                 <h4 class="text-2xl underline font-bold text-gray-900">Rooms soon available</h4>
                 <div class="flex flex-col gap-y-2.5">
-                    <a href="#" class="flex flex-col gap-y-2 px-6 py-2.5 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
-                        <div class="flex flex-row justify-between items-center">
-                            <h5 class="text-xl font-bold underline tracking-tight text-gray-900 dark:text-white">L012</h5>
-                            <p class="text-sm text-gray-400">Updated 5 hours ago</p>
-                        </div>
-                        <div class="flex flex-row justify-between items-center">
-                            <p class="text-sm font-normal text-gray-600 dark:text-gray-400">Algorithms and advanced programming</p>
-                            <div class="flex flex-row items-center gap-x-1 text-sm font-bold text-green-500">
-                                <svg class="w-[20px] h-[20px]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"></path>
-                                </svg>
-                                <p>Available in 32 mins</p>
+                    {% if rooms_soon_available %}
+                        {% for room in rooms_soon_available %}
+                        {# room is of type tuple[Room, TimeSlot, int, str] #}
+                        <a href="{% url 'aubouleau_web:room-detail' building_name=room.0.floor.building.name room_number=room.0.number %}" class="flex flex-col gap-y-2 px-6 py-2.5 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
+                            <div class="flex flex-row justify-between items-center">
+                                <h5 class="text-xl font-bold underline tracking-tight text-gray-900 dark:text-white">{{ room.0.number }}</h5>
+                                <p class="text-sm text-gray-400">{{ room.3 }}</p>
                             </div>
-                        </div>
-                    </a>
-                    <a href="#" class="flex flex-col gap-y-2 px-6 py-2.5 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
-                        <div class="flex flex-row justify-between items-center">
-                            <h5 class="text-xl font-bold underline tracking-tight text-gray-900 dark:text-white">L012</h5>
-                            <p class="text-sm text-gray-400">Updated 5 hours ago</p>
-                        </div>
-                        <div class="flex flex-row justify-between items-center">
-                            <p class="text-sm font-normal text-gray-600 dark:text-gray-400">Algorithms and advanced programming</p>
-                            <div class="flex flex-row items-center gap-x-1 text-sm font-bold text-green-500">
-                                <svg class="w-[20px] h-[20px]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"></path>
-                                </svg>
-                                <p>Available in 32 mins</p>
+                            <div class="flex flex-row justify-between items-center">
+                                <p class="text-sm font-normal text-gray-600 dark:text-gray-400 truncate">{{ room.1.subject }}</p>
+                                <div class="flex flex-row justify-end items-center gap-x-1 text-sm font-bold text-green-500 min-w-[25%]">
+                                    <svg class="w-[20px] h-[20px]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"></path>
+                                    </svg>
+                                    <p>Available in {{ room.2 }} min{{ room.2|pluralize }}</p>
+                                </div>
                             </div>
-                        </div>
-                    </a>
-                    <a href="#" class="flex flex-col gap-y-2 px-6 py-2.5 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
-                        <div class="flex flex-row justify-between items-center">
-                            <h5 class="text-xl font-bold underline tracking-tight text-gray-900 dark:text-white">L012</h5>
-                            <p class="text-sm text-gray-400">Updated 5 hours ago</p>
-                        </div>
-                        <div class="flex flex-row justify-between items-center">
-                            <p class="text-sm font-normal text-gray-600 dark:text-gray-400">Algorithms and advanced programming</p>
-                            <div class="flex flex-row items-center gap-x-1 text-sm font-bold text-green-500">
-                                <svg class="w-[20px] h-[20px]" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"></path>
-                                </svg>
-                                <p>Available in 32 mins</p>
-                            </div>
-                        </div>
-                    </a>
+                        </a>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-center text-gray-400">No rooms to show</p>
+                    {% endif %}
                 </div>
             </div>
             <a class="flex flex-row justify-end items-center text-green-500 hover:text-green-700" href="#">

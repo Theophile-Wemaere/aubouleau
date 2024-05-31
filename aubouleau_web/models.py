@@ -1,5 +1,5 @@
 import shutil
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 from django.db import models
 from django.utils import timezone
@@ -114,11 +114,11 @@ class Room(models.Model):
     floor = models.ForeignKey(Floor, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f'{self.name} (nº{self.number})'
+        return f'{self.number} ({self.name})'
 
     def is_available(self) -> bool:
         """
-        Indicates if a room is available right now.
+        Indicates if this room is available right now.
         :return: True if the room is available, False otherwise.
         """
         time_slots = self.timeslot_set.all().order_by("start_time")
@@ -128,12 +128,59 @@ class Room(models.Model):
                 return False
         return True
 
+    def is_available_at(self, time: datetime) -> bool:
+        """
+        Indicates if this room is available at the provided time.
+        :param time: The time to check the availability for.
+        :return: True if this room is available at the provided time, False otherwise.
+        """
+        time_slots = self.timeslot_set.all().order_by("start_time")
+        for time_slot in time_slots:
+            if time_slot.start_time <= time <= time_slot.end_time:
+                return False
+        return True
+
+    def is_available_soon(self, minutes=60) -> bool:
+        """
+        Indicates if this room will become available in less than the provided amount of minutes.
+        :param minutes: The number of minutes at which the room is considered NOT available soon (default is 60)
+        :return: True if the room will be available in less than the provided amount of minutes (or if it's already available), False otherwise.
+        """
+        time_slot = self.get_current_time_slot()
+        if time_slot and (time_slot.end_time - timezone.now()) < timedelta(minutes=minutes):
+            return True
+        # Room is already available
+        if not time_slot:
+            return True
+        return False
+
+    def get_time_left_until_available(self) -> timedelta:
+        """
+        Calculates the amount of time left until this room is available.
+        :return: A :py:class:`datetime` object representing the amount of time left until this room is available.
+        """
+        time_slots = self.timeslot_set.all().order_by("start_time")
+        now = timezone.now()
+        for time_slot in time_slots:
+            # Find the current time slot
+            if time_slot.start_time <= now <= time_slot.end_time:
+                return time_slot.end_time - now
+        return timedelta()
+
     def is_unavailable(self) -> bool:
         """
         Convenient shortcut method that returns the opposite of :py:meth:`Room.is_available`.
         :return: True is the room is unavailable, False otherwise.
         """
         return not self.is_available()
+
+    def get_current_time_slot(self):
+        time_slots = self.timeslot_set.all().order_by("start_time")
+        now = timezone.now()
+        for time_slot in time_slots:
+            if time_slot.start_time <= now <= time_slot.end_time:
+                return time_slot
+        return None
 
 
 class TimeSlot(models.Model):
