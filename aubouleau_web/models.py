@@ -176,11 +176,63 @@ class Room(models.Model):
         """
         return not self.is_available()
 
+    def get_time_left_until_unavailable(self) -> timedelta | None:
+        """
+        Calculates the amount of time left until this room becomes unavailable.
+        :return: A :py:class:`datetime` object representing the amount of time left until this room is no longer available.
+        If the room is already unavailable, returns a timedelta of 0 seconds.
+        If the room is available until the day of the day, returns None.
+        """
+        # The room is already unavailable
+        if self.get_current_time_slot():
+            return timedelta()
+
+        time_slots = self.timeslot_set.all().order_by("start_time")
+        now = timezone.now()
+        for time_slot in time_slots:
+            # Find the current time slot
+            if now <= time_slot.start_time:
+                return time_slot.start_time - now
+        # The room does not have a next time slot (it's free for the rest of the day)
+        return None
+
+    def is_unavailable_soon(self, minutes=60) -> bool:
+        """
+        Indicates if this room will become unavailable in less than the provided amount of minutes.
+        :param minutes: The number of minutes at which the room is considered unavailable soon (default is 60)
+        :return: True if the room will no longer be available in less than the provided amount of minutes (or if it's already unavailable), False otherwise.
+        """
+        # Room is already unavailable
+        if self.get_current_time_slot():
+            return True
+
+        now = timezone.now()
+        # Ensure that the room: 1. Is available, 2. Has a time slot that starts in less than [minutes] minutes
+        if self.get_time_left_until_unavailable() and self.get_time_left_until_unavailable() < timedelta(minutes=minutes):
+            return True
+        return False
+
     def get_current_time_slot(self):
+        """
+        Returns this room's current time slot.
+        :return: The current :py:class:`TimeSlot` object of this room.
+        """
         time_slots = self.timeslot_set.all().order_by("start_time")
         now = timezone.now()
         for time_slot in time_slots:
             if time_slot.start_time <= now <= time_slot.end_time:
+                return time_slot
+        return None
+
+    def get_next_time_slot(self):
+        """
+        Returns this room's next time slot if it exists.
+        :return: The current :py:class:`TimeSlot` object of this room if it exists, None otherwise.
+        """
+        time_slots = self.timeslot_set.all().order_by("start_time")
+        now = timezone.now()
+        for time_slot in time_slots:
+            if time_slot.start_time > now:
                 return time_slot
         return None
 
