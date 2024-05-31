@@ -128,6 +128,19 @@ class Room(models.Model):
                 return False
         return True
 
+    def get_time_left_until_available(self) -> timedelta:
+        """
+        Calculates the amount of time left until this room is available.
+        :return: A :py:class:`datetime` object representing the amount of time left until this room is available.
+        """
+        time_slots = self.timeslot_set.all().order_by("start_time")
+        now = timezone.now()
+        for time_slot in time_slots:
+            # Find the current time slot
+            if time_slot.start_time <= now <= time_slot.end_time:
+                return time_slot.end_time - now
+        return timedelta()
+
     def is_available_at(self, time: datetime) -> bool:
         """
         Indicates if this room is available at the provided time.
@@ -143,29 +156,18 @@ class Room(models.Model):
     def is_available_soon(self, minutes=60) -> bool:
         """
         Indicates if this room will become available in less than the provided amount of minutes.
-        :param minutes: The number of minutes at which the room is considered NOT available soon (default is 60)
+        :param minutes: The number of minutes at which the room is considered available soon (default is 60)
         :return: True if the room will be available in less than the provided amount of minutes (or if it's already available), False otherwise.
         """
         time_slot = self.get_current_time_slot()
-        if time_slot and (time_slot.end_time - timezone.now()) < timedelta(minutes=minutes):
+        now = timezone.now()
+        # Ensure that the room: 1. Is occupied, 2. Has a time slot that ends in less than [minutes] minutes, 3. Is available 1 min after the current time_slot ends
+        if time_slot and (time_slot.end_time - now) < timedelta(minutes=minutes) and self.is_available_at(time_slot.end_time + timedelta(minutes=1)):
             return True
         # Room is already available
         if not time_slot:
             return True
         return False
-
-    def get_time_left_until_available(self) -> timedelta:
-        """
-        Calculates the amount of time left until this room is available.
-        :return: A :py:class:`datetime` object representing the amount of time left until this room is available.
-        """
-        time_slots = self.timeslot_set.all().order_by("start_time")
-        now = timezone.now()
-        for time_slot in time_slots:
-            # Find the current time slot
-            if time_slot.start_time <= now <= time_slot.end_time:
-                return time_slot.end_time - now
-        return timedelta()
 
     def is_unavailable(self) -> bool:
         """

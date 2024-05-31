@@ -1575,6 +1575,10 @@ input:checked + .toggle-bg {
   width: 100%;
 }
 
+.w-\[50\%\] {
+  width: 50%;
+}
+
 .min-w-72 {
   min-width: 18rem;
 }
