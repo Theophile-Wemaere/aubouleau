@@ -1571,11 +1571,6 @@ input:checked + .toggle-bg {
   width: 20px;
 }
 
-.w-fit {
-  width: -moz-fit-content;
-  width: fit-content;
-}
-
 .w-full {
   width: 100%;
 }
@@ -1590,10 +1585,6 @@ input:checked + .toggle-bg {
 
 .min-w-\[25\%\] {
   min-width: 25%;
-}
-
-.min-w-\[50\%\] {
-  min-width: 50%;
 }
 
 .max-w-4xl {
@@ -2303,11 +2294,6 @@ input:checked + .toggle-bg {
 .text-yellow-400 {
   --tw-text-opacity: 1;
   color: rgb(227 160 8 / var(--tw-text-opacity));
-}
-
-.text-green-50 {
-  --tw-text-opacity: 1;
-  color: rgb(243 250 247 / var(--tw-text-opacity));
 }
 
 .underline {
