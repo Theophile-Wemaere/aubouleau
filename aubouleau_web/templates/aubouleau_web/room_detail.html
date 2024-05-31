@@ -74,7 +74,7 @@
                     {% else %}
                         <h3 class="text-lg font-bold text-red-600 dark:text-red-600">Occupied</h3>
                     {% endif %}
-                    <p class="w-fit mb-4 text-base font-normal text-wrap text-gray-500 dark:text-gray-500">{{ time_slot.0.subject }}</p>
+                    <p class="mb-4 text-base font-normal text-wrap text-gray-500 dark:text-gray-500 truncate">{{ time_slot.0.subject }}</p>
                 </li>
                 {% endfor %}
             </ol>

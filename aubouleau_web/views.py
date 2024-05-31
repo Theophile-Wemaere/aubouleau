@@ -19,7 +19,22 @@ def index(request):
         available_rooms += building.count_available_rooms()
         unavailable_rooms += building.count_unavailable_rooms()
 
-    return render(request, "aubouleau_web/index.html", {"available_rooms": available_rooms, "unavailable_rooms": unavailable_rooms})
+    rooms = Room.objects.all()
+    # Each tuple contains, the room soon available, its current time slot, the time left until available (in minutes) and the string "Updated [time] agp"
+    rooms_soon_available: list[tuple[Room, TimeSlot, int, str]] = []
+    for room in rooms:
+        if room.is_available_soon() and room.get_time_left_until_available().seconds > 0:
+            time_slot = room.get_current_time_slot()
+            last_update_time = timezone.now() - time_slot.created_at
+            if (last_update_time.seconds / 60) > 59:
+                update_info = f'Updated {round(last_update_time.seconds / 3600)} hour{'s' if round(last_update_time.seconds / 3600) > 1 else ''} ago'
+            else:
+                update_info = f'Updated {round(last_update_time.seconds / 60)} minute{'s' if round(last_update_time.seconds / 60) > 1 else ''} ago'
+            rooms_soon_available.append((room, time_slot, round(room.get_time_left_until_available().seconds / 60), update_info))
+    # Sort rooms soon available based on the time left until available (increasing order)
+    sorted_rooms_soon_available = sorted(rooms_soon_available, key=lambda x: x[2])
+
+    return render(request, "aubouleau_web/index.html", {"available_rooms": available_rooms, "unavailable_rooms": unavailable_rooms, "rooms_soon_available": sorted_rooms_soon_available})
 
 
 def buildings(request):
