@@ -36,6 +36,30 @@ class Building(models.Model):
             total_rooms += floor.count_rooms()
         return total_rooms
 
+    def count_available_rooms(self) -> int:
+        """
+        Counts the amount of rooms that are available right now.
+        :return: The number of available rooms in this :py:class:`Building`.
+        """
+        rooms = self.get_all_rooms()
+        available_rooms = 0
+        for room in rooms:
+            if room.is_available():
+                available_rooms += 1
+        return available_rooms
+
+    def count_unavailable_rooms(self) -> int:
+        """
+        Counts the amount of rooms that are unavailable right now.
+        :return: The number of unavailable rooms in this :py:class:`Building`.
+        """
+        rooms = self.get_all_rooms()
+        unavailable_rooms = 0
+        for room in rooms:
+            if room.is_unavailable():
+                unavailable_rooms += 1
+        return unavailable_rooms
+
     def get_all_rooms(self):
         """
         Fetches all the rooms contained in this :py:class:`Building`.
@@ -103,6 +127,13 @@ class Room(models.Model):
             if time_slot.start_time <= now <= time_slot.end_time:
                 return False
         return True
+
+    def is_unavailable(self) -> bool:
+        """
+        Convenient shortcut method that returns the opposite of :py:meth:`Room.is_available`.
+        :return: True is the room is unavailable, False otherwise.
+        """
+        return not self.is_available()
 
 
 class TimeSlot(models.Model):

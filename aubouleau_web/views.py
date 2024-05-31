@@ -13,7 +13,13 @@ def index(request):
     :param request: The HTTP request.
     :return: An HTTP response containing the dashboard page.
     """
-    return render(request, "aubouleau_web/index.html")
+    buildings = Building.objects.all()
+    available_rooms, unavailable_rooms = 0, 0
+    for building in buildings:
+        available_rooms += building.count_available_rooms()
+        unavailable_rooms += building.count_unavailable_rooms()
+
+    return render(request, "aubouleau_web/index.html", {"available_rooms": available_rooms, "unavailable_rooms": unavailable_rooms})
 
 
 def buildings(request):
