@@ -77,7 +77,7 @@ def download_calendars(rooms_list: list[str]) -> None:
     time.sleep(1)
 
     for room in rooms_list:
-        print(f"[hpfetch] Downloading calendar of room {room}...")
+        print(f"[hpfetch] Downloading calendar of room {room}...", end="", flush=True)
         # click on search bar
         driver.find_element(By.ID, "GInterface.Instances[1].Instances[1].bouton_Edit").click()
         # clear value
@@ -97,6 +97,7 @@ def download_calendars(rooms_list: list[str]) -> None:
             file.write(r.content)
         # close ical export menu
         link_element.send_keys(Keys.ESCAPE)
+        print("\t[OK]")
 
     driver.close()
 

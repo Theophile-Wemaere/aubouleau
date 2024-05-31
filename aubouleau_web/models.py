@@ -95,7 +95,6 @@ class Room(models.Model):
     def is_available(self) -> bool:
         """
         Indicates if a room is available right now.
-
         :return: True if the room is available, False otherwise.
         """
         time_slots = self.timeslot_set.all().order_by("start_time")
@@ -124,17 +123,23 @@ class TimeSlot(models.Model):
         return f'[{self.room.number}] {localtime(self.start_time).strftime("%d/%m/%Y, %H:%M")} - {localtime(self.end_time).strftime("%H:%M")} | {self.subject}'
 
     @staticmethod
-    def update_time_slots():
-        # Delete all time slots and delete all the calendars to force re-download
-        TimeSlot.objects.all().delete()
+    def update_time_slots() -> None:
+        """
+        Deletes all stored calendars and time slots and forces the re-download of calendars.
+        New :py:class:`TimeSlot` objects are created from the newly downloaded calendars.
+        """
+        # Delete all the calendars to force re-download
         shutil.rmtree(CALENDARS_DIRECTORY, ignore_errors=True)
 
         # Fetch all the room numbers from the DB and download all calendars
         room_numbers = Room.objects.values_list("number", flat=True)
         download_calendars(room_numbers)
 
+        # Delete all time slots to ensure there are no duplicates
+        TimeSlot.objects.all().delete()
+
         for room_number in room_numbers:
-            print(f'Creating time slots for room {room_number}...')
+            print(f'Creating time slots for room {room_number}...', end="", flush=True)
 
             # If the room does not exist in the application, skip it
             try:
@@ -148,6 +153,7 @@ class TimeSlot(models.Model):
                 # All naive datetime objects are converted to aware datetime objects
                 start_datetime, end_datetime, subject = make_aware(event[0]) if is_naive(event[0]) else event[0], make_aware(event[1]) if is_naive(event[1]) else event[1], event[2]
                 room.timeslot_set.create(subject=subject, start_time=start_datetime, end_time=end_datetime, created_at=timezone.now())
+            print("\t[OK]")
         print("All time slots have been successfully created.")
 
 
