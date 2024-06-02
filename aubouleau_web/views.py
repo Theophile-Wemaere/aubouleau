@@ -1,6 +1,9 @@
 from datetime import datetime
 
-from django.shortcuts import render, get_object_or_404
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
+from django.shortcuts import get_object_or_404, render, redirect
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.timezone import localtime, make_aware
 
@@ -50,6 +53,65 @@ def index(request):
     sorted_rooms_soon_unavailable = sorted(rooms_soon_unavailable, key=lambda x: x[2])
 
     return render(request, "aubouleau_web/index.html", {"available_rooms": available_rooms, "unavailable_rooms": unavailable_rooms, "rooms_soon_available": sorted_rooms_soon_available, "rooms_soon_unavailable": sorted_rooms_soon_unavailable})
+
+
+def sign_in(request):
+    """
+    Displays the sign-in page.
+    :param request: The HTTP request.
+    :return: An HTTP response containing a page with the sign-in form.
+    """
+    if request.method == 'GET':
+        return render(request, "aubouleau_web/sign_in.html")
+    elif request.method == 'POST':
+        username = request.POST.get('username', '')
+        password = request.POST.get('password', '')
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect("aubouleau_web:index")
+        else:
+            return render(request, "aubouleau_web/sign_in.html", {"invalid_credentials": True})
+    else:
+        return render(request, status=405, template_name="aubouleau_web/405.html")
+
+
+def sign_up(request):
+    """
+    Displays the sign-up page.
+    :param request: The HTTP request.
+    :return: An HTTP response containing a page with the sign-up form.
+    """
+    if request.method == 'GET':
+        return render(request, "aubouleau_web/sign_up.html")
+    elif request.method == 'POST':
+        # TODO: If there's time, server-side validation
+        username = request.POST.get('username', None)
+        email = request.POST.get('email', None)
+        first_name = request.POST.get('first_name', None)
+        last_name = request.POST.get('last_name', None)
+        password = request.POST.get('password', None)
+        password_confirm = request.POST.get('password_confirm', None)
+
+        # Create the user, log it in and redirect to the dashboard page
+        user = User.objects.create_user(username=username, first_name=first_name, last_name=last_name, email=email, password=password)
+        login(request, user)
+        return redirect("aubouleau_web:index")
+    else:
+        return render(request, status=405, template_name="aubouleau_web/405.html")
+
+
+def sign_out(request):
+    """
+    Logs the user out (destroys its session) and redirects to the dashboard page.
+    :param request: The HTTP request.
+    :return: An HTTP 302 response to the dashboard page.
+    """
+    if request.method == 'GET':
+        logout(request)
+        return redirect("aubouleau_web:index")
+    else:
+        return render(request, status=405, template_name="aubouleau_web/405.html")
 
 
 def buildings(request):

@@ -8,6 +8,15 @@ urlpatterns = [
     # /
     # Example: https://aubouleau.fr/
     path("", views.index, name="index"),
+    # /login
+    # Example: https://aubouleau.fr/login
+    path("login/", views.sign_in, name="sign_in"),
+    # /register
+    # Example: https://aubouleau.fr/register
+    path("register/", views.sign_up, name="sign_up"),
+    # /logout
+    # Example: https://aubouleau.fr/logout
+    path("logout/", views.sign_out, name="sign_out"),
     # /buildings
     # Example: https://aubouleau.fr/buildings
     path("buildings/", views.buildings, name="buildings"),
