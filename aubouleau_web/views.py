@@ -28,9 +28,9 @@ def index(request):
             time_slot = room.get_current_time_slot()
             last_update_time = timezone.now() - time_slot.created_at
             if (last_update_time.seconds / 60) > 59:
-                update_info = f'Updated {round(last_update_time.seconds / 3600)} hour{'s' if round(last_update_time.seconds / 3600) > 1 else ''} ago'
+                update_info = f"Updated {round(last_update_time.seconds / 3600)} hour{'s' if round(last_update_time.seconds / 3600) > 1 else ''} ago"
             else:
-                update_info = f'Updated {round(last_update_time.seconds / 60)} minute{'s' if round(last_update_time.seconds / 60) > 1 else ''} ago'
+                update_info = f"Updated {round(last_update_time.seconds / 60)} minute{'s' if round(last_update_time.seconds / 60) > 1 else ''} ago"
             rooms_soon_available.append((room, time_slot, round(room.get_time_left_until_available().seconds / 60), update_info))
     # Sort rooms soon available based on the time left until available (increasing order)
     sorted_rooms_soon_available = sorted(rooms_soon_available, key=lambda x: x[2])
@@ -42,9 +42,9 @@ def index(request):
             next_time_slot = room.get_next_time_slot()
             last_update_time = timezone.now() - next_time_slot.created_at
             if (last_update_time.seconds / 60) > 59:
-                update_info = f'Updated {round(last_update_time.seconds / 3600)} hour{'s' if round(last_update_time.seconds / 3600) > 1 else ''} ago'
+                update_info = f"Updated {round(last_update_time.seconds / 3600)} hour{'s' if round(last_update_time.seconds / 3600) > 1 else ''} ago"
             else:
-                update_info = f'Updated {round(last_update_time.seconds / 60)} minute{'s' if round(last_update_time.seconds / 60) > 1 else ''} ago'
+                update_info = f"Updated {round(last_update_time.seconds / 60)} minute{'s' if round(last_update_time.seconds / 60) > 1 else ''} ago"
             rooms_soon_unavailable.append((room, next_time_slot, round(room.get_time_left_until_unavailable().seconds / 60), update_info))
     # Sort rooms soon unavailable based on the time left until unavailable (increasing order)
     sorted_rooms_soon_unavailable = sorted(rooms_soon_unavailable, key=lambda x: x[2])
