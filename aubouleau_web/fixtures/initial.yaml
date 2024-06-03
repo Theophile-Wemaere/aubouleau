@@ -1,3 +1,9 @@
+# Administrators group
+- model: auth.Group
+  pk: 1
+  fields:
+    name: "Administrators"
+
 # Buildings
 - model: aubouleau_web.Building
   pk: 1

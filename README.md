@@ -23,6 +23,7 @@ DEBUG=1
 # Generate your own [SECRET_KEY](https://docs.djangoproject.com/en/5.0/ref/settings/#std-setting-SECRET_KEY) and do not share it !
 SECRET_KEY=[a secure string]
 DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
+CSRF_TRUSTED_ORIGINS=http://localhost http://127.0.0.1
 # Change the database backend to fit your needs
 DB_ENGINE=django.db.backends.mysql
 # Change the database settings to fit your needs

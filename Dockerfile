@@ -20,4 +20,7 @@ COPY . .
 # Make entrypoint.sh executable
 RUN chmod +x /app/deploy/entrypoint.sh
 
+# Directory where collectstatic will put static files
+ENV STATIC_ROOT /app/static
+
 ENTRYPOINT ["/app/deploy/entrypoint.sh"]
