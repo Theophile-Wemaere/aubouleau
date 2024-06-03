@@ -4,6 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <link rel="stylesheet" href="{% static 'aubouleau_web/style.css' %}">
+        <link rel="shortcut icon" href="{% static 'aubouleau_web/images/favicon.ico' %}"/>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js" defer></script>
         {% block scripts %}{% endblock %}
         <title>{% block title %}Aubouleau base template{% endblock %}</title>
@@ -49,7 +50,7 @@
                         <div class="flex items-center md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
                             <button type="button" class="flex text-sm bg-green-700 hover:bg-green-800 rounded-full md:me-0 focus:ring-4 focus:ring-green-300 dark:focus:ring-green-600" id="user-menu-button" aria-expanded="false" data-dropdown-toggle="user-dropdown" data-dropdown-placement="bottom">
                                 <span class="sr-only">Open user menu</span>
-                                <span class="flex justify-center items-center w-9 h-9 rounded-full text-xl text-white font-semibold text-center"><span>{{ user.first_name.0|upper }}</span></span>
+                                <span class="flex justify-center items-center w-9 h-9 rounded-full text-xl text-white font-semibold text-center"><span>{{ user.username.0|upper }}</span></span>
                             </button>
                             <!-- Dropdown menu -->
                             <div class="z-50 hidden my-4 text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow dark:bg-gray-700 dark:divide-gray-600" id="user-dropdown">
@@ -173,6 +174,28 @@
                                     </a>
                                 </li>
                             </ul>
+                            {% load custom_filters %}
+                            {% if user|is_administrator %}
+                            <ul class="pt-4 mt-4 space-y-2 font-medium border-t border-gray-200 dark:border-gray-700">
+                                <li>
+                                    <button type="button" class="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700" aria-controls="dropdown-administration" data-collapse-toggle="dropdown-administration">
+                                        <svg class="w-[24px] h-[24px] text-gray-500 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13v-2a1 1 0 0 0-1-1h-.757l-.707-1.707.535-.536a1 1 0 0 0 0-1.414l-1.414-1.414a1 1 0 0 0-1.414 0l-.536.535L14 4.757V4a1 1 0 0 0-1-1h-2a1 1 0 0 0-1 1v.757l-1.707.707-.536-.535a1 1 0 0 0-1.414 0L4.929 6.343a1 1 0 0 0 0 1.414l.536.536L4.757 10H4a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h.757l.707 1.707-.535.536a1 1 0 0 0 0 1.414l1.414 1.414a1 1 0 0 0 1.414 0l.536-.535 1.707.707V20a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-.757l1.707-.708.536.536a1 1 0 0 0 1.414 0l1.414-1.414a1 1 0 0 0 0-1.414l-.535-.536.707-1.707H20a1 1 0 0 0 1-1Z"></path>
+                                          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"></path>
+                                        </svg>
+                                        <span class="flex-1 ms-3 text-left rtl:text-right whitespace-nowrap">Administration</span>
+                                        <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"></path>
+                                        </svg>
+                                    </button>
+                                    <ul id="dropdown-administration" class="hidden py-2 space-y-2">
+                                        <li><a href="{% url 'aubouleau_web:administration_buildings' %}" class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Buildings</a></li>
+                                        <li><a href="#" class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Floors</a></li>
+                                        <li><a href="#" class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Rooms</a></li>
+                                    </ul>
+                                </li>
+                            </ul>
+                            {% endif %}
                             <ul class="pt-4 mt-4 space-y-2 font-medium border-t border-gray-200 dark:border-gray-700">
                                 <li>
                                     <a href="#" class="flex items-center p-2 text-gray-900 transition duration-75 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-white group">

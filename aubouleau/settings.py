@@ -30,6 +30,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 DEBUG = bool(os.environ.get("DEBUG", default=0))
 
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS").split(" ")
+CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS").split(" ")
 
 
 # Application definition
@@ -128,6 +129,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = os.environ.get("STATIC_ROOT", None)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -140,3 +142,7 @@ CRONJOBS = [
     # Every 6 hours (https://crontab.guru/every-6-hours)
     ('0 */6 * * *', 'aubouleau_web.models.update_time_slots', '> /tmp/update_time_slots_cronjob.log 2>&1'),
 ]
+
+# Default login URL (used by the login_required decorator)
+# See: https://docs.djangoproject.com/en/5.0/ref/settings/#std-setting-LOGIN_URL
+LOGIN_URL = '/login/'

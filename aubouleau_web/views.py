@@ -1,9 +1,10 @@
 from datetime import datetime
 
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, render, redirect
-from django.urls import reverse
 from django.utils import timezone
 from django.utils.timezone import localtime, make_aware
 
@@ -62,18 +63,22 @@ def sign_in(request):
     :return: An HTTP response containing a page with the sign-in form.
     """
     if request.method == 'GET':
-        return render(request, "aubouleau_web/sign_in.html")
+        return render(request, "aubouleau_web/sign_in.html", {"next_url": request.GET.get('next', None)})
     elif request.method == 'POST':
         username = request.POST.get('username', '')
         password = request.POST.get('password', '')
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            return redirect("aubouleau_web:index")
+            next_url = request.POST.get('next_url', None)
+            if next_url:
+                return redirect(next_url)
+            else:
+                return redirect("aubouleau_web:index")
         else:
             return render(request, "aubouleau_web/sign_in.html", {"invalid_credentials": True})
     else:
-        return render(request, status=405, template_name="aubouleau_web/405.html")
+        return render(request, status=405, template_name="405.html")
 
 
 def sign_up(request):
@@ -98,7 +103,7 @@ def sign_up(request):
         login(request, user)
         return redirect("aubouleau_web:index")
     else:
-        return render(request, status=405, template_name="aubouleau_web/405.html")
+        return render(request, status=405, template_name="405.html")
 
 
 def sign_out(request):
@@ -111,7 +116,95 @@ def sign_out(request):
         logout(request)
         return redirect("aubouleau_web:index")
     else:
-        return render(request, status=405, template_name="aubouleau_web/405.html")
+        return render(request, status=405, template_name="405.html")
+
+
+@login_required
+def administration_buildings(request):
+    """
+    Displays the buildings administration page.
+    :param request: The HTTP request.
+    :return: An HTTP response containing a page where buildings are displayed and can be modified.
+    """
+    # This is not the best way to manage permissions, but for the sake of this application, checking that the
+    # user is a member of the "Administrators" group is enough.
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    buildings_list = Building.objects.all().order_by('name')
+
+    return render(request, "aubouleau_web/administration_buildings.html", {"buildings": buildings_list})
+
+
+@login_required()
+def administration_buildings_new(request):
+    """
+    Displays the page containing a form to add a new building
+    :param request: The HTTP request.
+    :return: An HTTP response containing a page with a form to add a new building.
+    """
+    # This is not the best way to manage permissions, but for the sake of this application, checking that the
+    # user is a member of the "Administrators" group is enough.
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    if request.method == 'GET':
+        return render(request, "aubouleau_web/administration_buildings_new.html")
+    elif request.method == 'POST':
+        building_name = request.POST.get('building_name', None)
+        # TODO: Handle building picture upload
+        Building.objects.create(name=building_name, created_at=timezone.now())
+        return redirect("aubouleau_web:administration_buildings")
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+@login_required()
+def administration_buildings_edit(request, building_name):
+    """
+    Displays the page containing a form to edit an existing building
+    :param request: The HTTP request.
+    :param building_name: The name of the building to edit.
+    :return: An HTTP response containing a page with a form to edit an existing building
+    """
+    # This is not the best way to manage permissions, but for the sake of this application, checking that the
+    # user is a member of the "Administrators" group is enough.
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    if request.method == 'GET':
+        building = Building.objects.get(name=building_name)
+        return render(request, "aubouleau_web/administration_buildings_edit.html", {"building": building})
+    elif request.method == 'POST':
+        building = Building.objects.get(name=building_name)
+        building_name = request.POST.get('building_name', None)
+        # TODO: Handle building picture upload
+        building.name = building_name
+        building.save()
+        return redirect("aubouleau_web:administration_buildings")
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+@login_required()
+def administration_buildings_delete(request, building_name):
+    """
+    Deletes an existing building from the database. This method only handles POST requests.
+    :param request: The HTTP request.
+    :param building_name: The name of the building to delete.
+    :return: An HTTP 302 response to the buildings administration page.
+    """
+    # This is not the best way to manage permissions, but for the sake of this application, checking that the
+    # user is a member of the "Administrators" group is enough.
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+    
+    if request.method == 'POST':
+        building = Building.objects.get(name=building_name)
+        building.delete()
+        return redirect("aubouleau_web:administration_buildings")
+    else:
+        return render(request, status=405, template_name="405.html")
 
 
 def buildings(request):

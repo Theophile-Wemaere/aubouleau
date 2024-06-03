@@ -3,6 +3,7 @@
 
 # Django
 aubouleau_web/migrations/
+aubouleau_web/static/admin
 
 # PyCharm
 .idea/

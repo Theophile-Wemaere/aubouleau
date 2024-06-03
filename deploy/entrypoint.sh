@@ -7,9 +7,11 @@ ln -s /usr/share/zoneinfo/Europe/Paris /etc/localtime
 printenv > /var/spool/cron/crontabs/root
 service cron start
 
+python manage.py collectstatic --noinput
 python manage.py flush --no-input
 python manage.py makemigrations aubouleau_web
 python manage.py migrate
+python manage.py createsuperuser --noinput
 python manage.py loaddata initial
 # Adds the cronjob to the crontab and stores the result in the variable below
 crontab_add_output=$(python manage.py crontab add)

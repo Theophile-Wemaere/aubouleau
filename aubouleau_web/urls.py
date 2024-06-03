@@ -8,6 +8,7 @@ urlpatterns = [
     # /
     # Example: https://aubouleau.fr/
     path("", views.index, name="index"),
+
     # /login
     # Example: https://aubouleau.fr/login
     path("login/", views.sign_in, name="sign_in"),
@@ -17,6 +18,20 @@ urlpatterns = [
     # /logout
     # Example: https://aubouleau.fr/logout
     path("logout/", views.sign_out, name="sign_out"),
+
+    # /administration/buildings
+    # Example: https://aubouleau.fr/administration/buildings
+    path("administration/buildings/", views.administration_buildings, name="administration_buildings"),
+    # /administration/buildings/new
+    # Example: https://aubouleau.fr/administration/buildings/new
+    path("administration/buildings/new", views.administration_buildings_new, name="administration_buildings_new"),
+    # /administration/buildings/edit/[building_name]
+    # Example: https://aubouleau.fr/administration/buildings/edit/NDL
+    path("administration/buildings/edit/<str:building_name>/", views.administration_buildings_edit, name="administration_buildings_edit"),
+    # /administration/buildings/delete/[building_name]
+    # Example: https://aubouleau.fr/administration/buildings/delete/NDL
+    path("administration/buildings/delete/<str:building_name>/", views.administration_buildings_delete, name="administration_buildings_delete"),
+
     # /buildings
     # Example: https://aubouleau.fr/buildings
     path("buildings/", views.buildings, name="buildings"),
