@@ -1,6 +1,14 @@
-from django.shortcuts import render
+from datetime import datetime
 
-from .models import Building, Floor, Room
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.core.exceptions import PermissionDenied
+from django.shortcuts import get_object_or_404, render, redirect
+from django.utils import timezone
+from django.utils.timezone import localtime, make_aware
+
+from .models import Building, Room, TimeSlot
 
 
 def index(request):
@@ -9,7 +17,194 @@ def index(request):
     :param request: The HTTP request.
     :return: An HTTP response containing the dashboard page.
     """
-    return render(request, "aubouleau_web/index.html")
+    buildings = Building.objects.all()
+    available_rooms, unavailable_rooms = 0, 0
+    for building in buildings:
+        available_rooms += building.count_available_rooms()
+        unavailable_rooms += building.count_unavailable_rooms()
+
+    rooms = Room.objects.all()
+
+    # Each tuple contains: the room soon available, its current time slot, the time left until available (in minutes) and the string "Updated [time] agp"
+    rooms_soon_available: list[tuple[Room, TimeSlot, int, str]] = []
+    for room in rooms:
+        if room.is_available_soon() and room.get_time_left_until_available().seconds > 0:
+            time_slot = room.get_current_time_slot()
+            last_update_time = timezone.now() - time_slot.created_at
+            if (last_update_time.seconds / 60) > 59:
+                update_info = f"Updated {round(last_update_time.seconds / 3600)} hour{'s' if round(last_update_time.seconds / 3600) > 1 else ''} ago"
+            else:
+                update_info = f"Updated {round(last_update_time.seconds / 60)} minute{'s' if round(last_update_time.seconds / 60) > 1 else ''} ago"
+            rooms_soon_available.append((room, time_slot, round(room.get_time_left_until_available().seconds / 60), update_info))
+    # Sort rooms soon available based on the time left until available (increasing order)
+    sorted_rooms_soon_available = sorted(rooms_soon_available, key=lambda x: x[2])
+
+    # Each tuple contains: the room soon unavailable, its next time slot, the time left until the room is unavailable (in minutes) and the string "Updated [time] ago"
+    rooms_soon_unavailable: list[tuple[Room, TimeSlot, int, str]] = []
+    for room in rooms:
+        if room.is_unavailable_soon() and room.get_time_left_until_unavailable() and room.get_time_left_until_unavailable().seconds > 0:
+            next_time_slot = room.get_next_time_slot()
+            last_update_time = timezone.now() - next_time_slot.created_at
+            if (last_update_time.seconds / 60) > 59:
+                update_info = f"Updated {round(last_update_time.seconds / 3600)} hour{'s' if round(last_update_time.seconds / 3600) > 1 else ''} ago"
+            else:
+                update_info = f"Updated {round(last_update_time.seconds / 60)} minute{'s' if round(last_update_time.seconds / 60) > 1 else ''} ago"
+            rooms_soon_unavailable.append((room, next_time_slot, round(room.get_time_left_until_unavailable().seconds / 60), update_info))
+    # Sort rooms soon unavailable based on the time left until unavailable (increasing order)
+    sorted_rooms_soon_unavailable = sorted(rooms_soon_unavailable, key=lambda x: x[2])
+
+    return render(request, "aubouleau_web/index.html", {"available_rooms": available_rooms, "unavailable_rooms": unavailable_rooms, "rooms_soon_available": sorted_rooms_soon_available, "rooms_soon_unavailable": sorted_rooms_soon_unavailable})
+
+
+def sign_in(request):
+    """
+    Displays the sign-in page.
+    :param request: The HTTP request.
+    :return: An HTTP response containing a page with the sign-in form.
+    """
+    if request.method == 'GET':
+        return render(request, "aubouleau_web/sign_in.html", {"next_url": request.GET.get('next', None)})
+    elif request.method == 'POST':
+        username = request.POST.get('username', '')
+        password = request.POST.get('password', '')
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            next_url = request.POST.get('next_url', None)
+            if next_url:
+                return redirect(next_url)
+            else:
+                return redirect("aubouleau_web:index")
+        else:
+            return render(request, "aubouleau_web/sign_in.html", {"invalid_credentials": True})
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+def sign_up(request):
+    """
+    Displays the sign-up page.
+    :param request: The HTTP request.
+    :return: An HTTP response containing a page with the sign-up form.
+    """
+    if request.method == 'GET':
+        return render(request, "aubouleau_web/sign_up.html")
+    elif request.method == 'POST':
+        # TODO: If there's time, server-side validation
+        username = request.POST.get('username', None)
+        email = request.POST.get('email', None)
+        first_name = request.POST.get('first_name', None)
+        last_name = request.POST.get('last_name', None)
+        password = request.POST.get('password', None)
+        password_confirm = request.POST.get('password_confirm', None)
+
+        # Create the user, log it in and redirect to the dashboard page
+        user = User.objects.create_user(username=username, first_name=first_name, last_name=last_name, email=email, password=password)
+        login(request, user)
+        return redirect("aubouleau_web:index")
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+def sign_out(request):
+    """
+    Logs the user out (destroys its session) and redirects to the dashboard page.
+    :param request: The HTTP request.
+    :return: An HTTP 302 response to the dashboard page.
+    """
+    if request.method == 'GET':
+        logout(request)
+        return redirect("aubouleau_web:index")
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+@login_required
+def administration_buildings(request):
+    """
+    Displays the buildings administration page.
+    :param request: The HTTP request.
+    :return: An HTTP response containing a page where buildings are displayed and can be modified.
+    """
+    # This is not the best way to manage permissions, but for the sake of this application, checking that the
+    # user is a member of the "Administrators" group is enough.
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    buildings_list = Building.objects.all().order_by('name')
+
+    return render(request, "aubouleau_web/administration_buildings.html", {"buildings": buildings_list})
+
+
+@login_required()
+def administration_buildings_new(request):
+    """
+    Displays the page containing a form to add a new building
+    :param request: The HTTP request.
+    :return: An HTTP response containing a page with a form to add a new building.
+    """
+    # This is not the best way to manage permissions, but for the sake of this application, checking that the
+    # user is a member of the "Administrators" group is enough.
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    if request.method == 'GET':
+        return render(request, "aubouleau_web/administration_buildings_new.html")
+    elif request.method == 'POST':
+        building_name = request.POST.get('building_name', None)
+        # TODO: Handle building picture upload
+        Building.objects.create(name=building_name, created_at=timezone.now())
+        return redirect("aubouleau_web:administration_buildings")
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+@login_required()
+def administration_buildings_edit(request, building_name):
+    """
+    Displays the page containing a form to edit an existing building
+    :param request: The HTTP request.
+    :param building_name: The name of the building to edit.
+    :return: An HTTP response containing a page with a form to edit an existing building
+    """
+    # This is not the best way to manage permissions, but for the sake of this application, checking that the
+    # user is a member of the "Administrators" group is enough.
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    if request.method == 'GET':
+        building = Building.objects.get(name=building_name)
+        return render(request, "aubouleau_web/administration_buildings_edit.html", {"building": building})
+    elif request.method == 'POST':
+        building = Building.objects.get(name=building_name)
+        building_name = request.POST.get('building_name', None)
+        # TODO: Handle building picture upload
+        building.name = building_name
+        building.save()
+        return redirect("aubouleau_web:administration_buildings")
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+@login_required()
+def administration_buildings_delete(request, building_name):
+    """
+    Deletes an existing building from the database. This method only handles POST requests.
+    :param request: The HTTP request.
+    :param building_name: The name of the building to delete.
+    :return: An HTTP 302 response to the buildings administration page.
+    """
+    # This is not the best way to manage permissions, but for the sake of this application, checking that the
+    # user is a member of the "Administrators" group is enough.
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+    
+    if request.method == 'POST':
+        building = Building.objects.get(name=building_name)
+        building.delete()
+        return redirect("aubouleau_web:administration_buildings")
+    else:
+        return render(request, status=405, template_name="405.html")
 
 
 def buildings(request):
@@ -29,13 +224,13 @@ def building_detail(request, building_name):
     :param building_name: The name of the :py:class:`Building` to show the details for.
     :return: An HTTP response containing the detailed information of the relevant :py:class:`Building`.
     """
-    building = Building.objects.get(name=building_name)
+    building = get_object_or_404(Building, name=building_name)
     floors_list = building.floor_set.all()
     rooms_list = building.get_all_rooms()
     return render(request, "aubouleau_web/building_detail.html", {"building": building, "floors": floors_list, "rooms": rooms_list})
 
 
-def floors(request, building_name):
+def building_floors(request, building_name):
     """
     Displays the list of all the :py:class:`Floor` of the relevant :py:class:`Building`.
     :param request: The HTTP request.
@@ -44,7 +239,7 @@ def floors(request, building_name):
     """
     building = Building.objects.get(name=building_name)
     floors_list = building.floor_set.all()
-    return render(request, "aubouleau_web/floors.html", {"building": building, "floors": floors_list})
+    return render(request, "aubouleau_web/building_floors.html", {"building": building, "floors": floors_list})
 
 
 def floor_detail(request, building_name, floor_number):
@@ -61,7 +256,21 @@ def floor_detail(request, building_name, floor_number):
     return render(request, "aubouleau_web/floor_detail.html", {"building": building, "floor": floor, "rooms": rooms_list})
 
 
-def rooms(request, building_name):
+def floor_rooms(request, building_name, floor_number):
+    """
+    Displays the list of all the :py:class:`Room` of the relevant :py:class:`Floor`.
+    :param request: The HTTP request.
+    :param building_name: The name of the :py:class:`Building` the :py:class:`Floor` belongs to.
+    :param floor_number: The number of the :py:class:`Floor` to show the details for.
+    :return: An HTTP response containing a page with all the available rooms of the relevant :py:class:`Floor`.
+    """
+    building = Building.objects.get(name=building_name)
+    floor = building.floor_set.get(number=floor_number)
+    rooms_list = floor.room_set.all()
+    return render(request, "aubouleau_web/floor_rooms.html", {"building": building, "floor": floor, "rooms": rooms_list})
+
+
+def building_rooms(request, building_name):
     """
     Displays the list of all the :py:class:`Room` of the relevant :py:class:`Building`.
     :param request: The HTTP request.
@@ -70,7 +279,7 @@ def rooms(request, building_name):
     """
     building = Building.objects.get(name=building_name)
     rooms_list = building.get_all_rooms()
-    return render(request, "aubouleau_web/rooms.html", {"building": building, "rooms": rooms_list})
+    return render(request, "aubouleau_web/building_rooms.html", {"building": building, "rooms": rooms_list})
 
 
 def room_detail(request, building_name, room_number):
@@ -83,4 +292,34 @@ def room_detail(request, building_name, room_number):
     """
     building = Building.objects.get(name=building_name)
     room = Room.objects.get(number=room_number)
-    return render(request, "aubouleau_web/room_detail.html", {"building": building, "room": room})
+    time_slots = room.timeslot_set.all().order_by("start_time")
+
+    # A list containing tuples made of 2 elements: (TimeSlot object, True if the time slot is marked as available, False otherwise)
+    time_slots_list: list[tuple[TimeSlot, bool]] = []
+    previous_time_slot: TimeSlot | None = None
+
+    # If there are no time slots at all, we simply create a single time slot from DAY_START to DAY_END
+    if len(time_slots) == 0:
+        day_start = make_aware(TimeSlot.DAY_START.replace(year=datetime.now().year, month=datetime.now().month, day=datetime.now().day))
+        day_end = make_aware(TimeSlot.DAY_END.replace(year=datetime.now().year, month=datetime.now().month, day=datetime.now().day))
+        time_slots_list.append((TimeSlot(subject="Room is available", start_time=day_start, end_time=day_end, created_at=timezone.now(), room=room), True))
+
+    for time_slot in time_slots:
+        # If the first time slot of the day stars after DAY_START, add a time slot marked as available that "fills the gap"
+        # Since DAY_START is naive, we convert the time_slot start_time to the local time first
+        if not previous_time_slot and localtime(time_slot.start_time).time() > TimeSlot.DAY_START.time():
+            day_start = make_aware(TimeSlot.DAY_START.replace(year=datetime.now().year, month=datetime.now().month, day=datetime.now().day))
+            time_slots_list.append((TimeSlot(subject="Room is available", start_time=day_start, end_time=time_slot.start_time, created_at=timezone.now(), room=time_slot.room), True))
+        # If the time_slot does not start where the previous one ended, "fill the gap" with a time slot marked as available
+        if previous_time_slot and time_slot.start_time > previous_time_slot.end_time:
+            time_slots_list.append((TimeSlot(subject="Room is available", start_time=previous_time_slot.end_time, end_time=time_slot.start_time, created_at=timezone.now(), room=time_slot.room), True))
+        time_slots_list.append((time_slot, False))
+        previous_time_slot = time_slot
+
+    # If the last time slot of the day ends before DAY_END, add a time slot marked as available that "fills the gap"
+    # Since DAY_END is naive, we convert the time_slot end_time to the local time first
+    if previous_time_slot and localtime(previous_time_slot.end_time).time() < TimeSlot.DAY_END.time():
+        day_end = make_aware(TimeSlot.DAY_END.replace(year=datetime.now().year, month=datetime.now().month, day=datetime.now().day))
+        time_slots_list.append((TimeSlot(subject="Room is available", start_time=previous_time_slot.end_time, end_time=day_end, created_at=timezone.now(), room=previous_time_slot.room), True))
+
+    return render(request, "aubouleau_web/room_detail.html", {"building": building, "room": room, "time_slots": time_slots_list})

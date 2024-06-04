@@ -25,12 +25,15 @@ services:
     expose:
       - 8000
     environment:
+      # Defines the timezone in the container
+      TZ: 'Europe/Paris'
       # Set to 0 for production
-      DEBUG: 1
+      DEBUG: 0
       # Make sure to generate a new private key for production use
       # See: https://docs.djangoproject.com/en/5.0/topics/signing/
       SECRET_KEY: django-insecure-78oyl4+o_!+xx0hj(x1xm7*w8j1iv2et^x)jxnqmo7#z8scj(4
       DJANGO_ALLOWED_HOSTS: localhost 127.0.0.1 [::1]
+      CSRF_TRUSTED_ORIGINS: http://localhost:8888 http://127.0.0.1:8888
       DB_ENGINE: django.db.backends.mysql
       DB_HOST: aubouleau-db
       DB_PORT: 3306
@@ -38,6 +41,18 @@ services:
       DB_NAME: aubouleau
       DB_USERNAME: aubouleau
       DB_PASSWORD: aubouleau
+      # Hyperplanning
+      HP_USERNAME: hyperplanning_user
+      # HP_PASSWORD must be in base64 !
+      HP_PASSWORD: hyperplanning_password_in_base64
+      # This is the default admin account, make sure to use secure credentials !
+      DJANGO_SUPERUSER_USERNAME: admin
+      DJANGO_SUPERUSER_PASSWORD: admin
+      DJANGO_SUPERUSER_EMAIL: admin@example.org
+    volumes:
+      # The container will collect all static files and put them in /app/static, which is bound to ./aubouleau_web/static on the host
+      # This will ensure that the static files for the admin app are collected
+      - ./aubouleau_web/static:/app/static
     depends_on:
       aubouleau-db:
         condition: service_healthy

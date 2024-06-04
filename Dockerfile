@@ -6,6 +6,9 @@ ENV PYTHONDONTWRITEBYTECODE 1
 # Prevents Python from buffering stdout and stderr (equivalent to python -u option)
 ENV PYTHONUNBUFFERED 1
 
+# APT dependencies
+RUN apt-get update && apt-get -y install cron firefox-esr --no-install-recommends
+
 # Python dependencies
 RUN pip install --upgrade pip
 COPY ./requirements.txt .
@@ -16,5 +19,8 @@ COPY . .
 
 # Make entrypoint.sh executable
 RUN chmod +x /app/deploy/entrypoint.sh
+
+# Directory where collectstatic will put static files
+ENV STATIC_ROOT /app/static
 
 ENTRYPOINT ["/app/deploy/entrypoint.sh"]

@@ -9,6 +9,37 @@ This project also allows ISEP personnel to manage the content displayed on the w
 
 To start developing on this project, start by cloning this repository.
 
+### Setting up the local development database
+
+`TODO`
+
+### Setting up environment variables
+
+Different sensitive and environment-dependent variables are populated using a `.env` file that is not commited to this repository.
+In order to start developing on the project, create a `.env` file at the root of this project using the following template:
+```properties
+# Set to 0 to disable Debug mode (the Django webserver will NOT serve static files !)
+DEBUG=1
+# Generate your own [SECRET_KEY](https://docs.djangoproject.com/en/5.0/ref/settings/#std-setting-SECRET_KEY) and do not share it !
+SECRET_KEY=[a secure string]
+DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
+CSRF_TRUSTED_ORIGINS=http://localhost http://127.0.0.1
+# Change the database backend to fit your needs
+DB_ENGINE=django.db.backends.mysql
+# Change the database settings to fit your needs
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_NAME=aubouleau
+DB_USERNAME=[name of the database user]
+DB_PASSWORD=[password of the database user]
+# Hyperplanning
+HP_USERNAME=[Hyperplanning username]
+# HP_PASSWORD must be in base64 ! (make sure NOT to include the newline character)
+HP_PASSWORD=[Hyperplanning password in base64]
+```
+
+### Setting up `tailwindcss`
+
 The user interface (UI) uses [tailwindcss](https://tailwindcss.com/) and [Flowbite](https://flowbite.com/), which are provided though `npm`. You can install these dependencies by first installing `nodejs` and `npm` and then typing:
 ```shell
 npm install
@@ -34,7 +65,7 @@ sudo docker compose up -d
 
 The following ports will be exposed on the host machine :
 
-- `8888`: `NGINX`. To access the application, open http://localhost:5050 in your browser.
+- `8888`: `NGINX`. To access the application, open http://localhost:8888 in your browser.
 - `5080`: `phpmyadmin`. To access the `phpmyadmin` web interface, open http://localhost:5080 in your browser.
 
 To completely delete the stack and remove all created containers, run the following command in a terminal:

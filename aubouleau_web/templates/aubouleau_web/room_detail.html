@@ -1,10 +1,148 @@
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Details of {{ room.name }}</title>
-    </head>
-    <body>
-        <h1>Placeholder view for details of {{ room.number }} ({{ room.name }})</h1>
-    </body>
-</html>
+{% extends "aubouleau_web/base.html" %}
+{% load static %}
+
+{% block title %}Aubouleau | {{ building.name }} | {{ room.number }}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="flex px-5 py-3 text-gray-700 border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700" aria-label="Breadcrumb">
+    <ol class="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
+        <li class="inline-flex items-center">
+            <a href="{% url 'aubouleau_web:index' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-green-600 dark:text-gray-400 dark:hover:text-white">
+                <svg class="w-3 h-3 me-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="m19.707 9.293-2-2-7-7a1 1 0 0 0-1.414 0l-7 7-2 2a1 1 0 0 0 1.414 1.414L2 10.414V18a2 2 0 0 0 2 2h3a1 1 0 0 0 1-1v-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v4a1 1 0 0 0 1 1h3a2 2 0 0 0 2-2v-7.586l.293.293a1 1 0 0 0 1.414-1.414Z"></path>
+                </svg>
+                Dashboard
+            </a>
+        </li>
+        <li>
+            <div class="flex items-center">
+                <svg class="rtl:rotate-180 block w-3 h-3 mx-1 text-gray-400 " aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"></path>
+                </svg>
+                <a href="{% url 'aubouleau_web:building_detail' building_name=building.name %}" class="ms-1 text-sm font-medium text-gray-700 hover:text-green-600 md:ms-2 dark:text-gray-400 dark:hover:text-white">{{ building.name }}</a>
+            </div>
+        </li>
+        <li>
+            <div class="flex items-center">
+                <svg class="rtl:rotate-180 block w-3 h-3 mx-1 text-gray-400 " aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"></path>
+                </svg>
+                <a href="{% url 'aubouleau_web:building_rooms' building_name=building.name %}" class="ms-1 text-sm font-medium text-gray-700 hover:text-green-600 md:ms-2 dark:text-gray-400 dark:hover:text-white">Rooms</a>
+            </div>
+        </li>
+        <li aria-current="page">
+            <div class="flex items-center">
+                <svg class="rtl:rotate-180  w-3 h-3 mx-1 text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"></path>
+                </svg>
+                <span class="ms-1 text-sm font-medium text-gray-500 md:ms-2 dark:text-gray-400">{{ room.number }}</span>
+            </div>
+        </li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="flex flex-row flex-grow items-start gap-x-10 justify-between px-10 pb-4" id="content">
+    {# First column #}
+    <div class="flex flex-col flex-grow gap-y-10 max-w-[50%]">
+        {# Title wrapper #}
+        <div class="flex flex-col gap-y-4">
+            <h1 class="text-5xl font-bold text-gray-900">{{ room.number }} - {{ room.name }}</h1>
+            <div class="flex flex-row items-center gap-x-1">
+                <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                    <path fill-rule="evenodd" d="M11.906 1.994a8.002 8.002 0 0 1 8.09 8.421 7.996 7.996 0 0 1-1.297 3.957.996.996 0 0 1-.133.204l-.108.129c-.178.243-.37.477-.573.699l-5.112 6.224a1 1 0 0 1-1.545 0L5.982 15.26l-.002-.002a18.146 18.146 0 0 1-.309-.38l-.133-.163a.999.999 0 0 1-.13-.202 7.995 7.995 0 0 1 6.498-12.518ZM15 9.997a3 3 0 1 1-5.999 0 3 3 0 0 1 5.999 0Z" clip-rule="evenodd"></path>
+                </svg>
+                <h2 class="text-2xl font-semibold text-gray-900">{{ room.floor.building.name }} - Floor {{ room.floor.number }}</h2>
+            </div>
+        </div>
+        {# Timeline #}
+        <div class="flex flex-col gap-y-4">
+            <h3 class="text-2xl font-bold underline text-gray-900">Today's schedule</h3>
+            <ol class="relative border-s border-gray-200 dark:border-gray-700">
+                {% for time_slot in time_slots %}
+                <li class="mb-10 ms-4">
+                    <div class="absolute w-3 h-3 bg-gray-200 rounded-full mt-1.5 -start-1.5 border border-white dark:border-gray-900 dark:bg-gray-700"></div>
+                    <div class="flex flex-row items-center gap-x-2">
+                        <div class="flex flex-row items-center gap-x-0.5">
+                            <svg class="w-[20px] h-[20px] text-gray-400 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"></path>
+                            </svg>
+                            <time class="text-sm font-normal leading-none text-gray-400 dark:text-gray-500">{{ time_slot.0.start_time|date:"H:i" }} - {{ time_slot.0.end_time|date:"H:i" }}</time>
+                        </div>
+                        {% if time_slot.0.is_active_now%}
+                            <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">Now</span>
+                        {% endif %}
+                    </div>
+                    {% if time_slot.1 %}
+                        <h3 class="text-lg font-bold text-green-500 dark:text-green-500">Available</h3>
+                    {% else %}
+                        <h3 class="text-lg font-bold text-red-600 dark:text-red-600">Occupied</h3>
+                    {% endif %}
+                    <p class="mb-4 text-base font-normal text-wrap text-gray-500 dark:text-gray-500 truncate">{{ time_slot.0.subject }}</p>
+                </li>
+                {% endfor %}
+            </ol>
+        </div>
+    </div>
+    {# Second column #}
+    <div class="flex flex-col flex-grow gap-y-4 max-w-[50%]">
+        {# Status #}
+        <a href="#" class="flex flex-col flex-grow px-2 py-6 xl:p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
+            <h5 class="mb-2 text-xl xl:text-2xl font-bold text-center tracking-tight text-gray-900 dark:text-white">Status</h5>
+            {% if room.is_available %}
+                {% if room.is_unavailable_soon %}
+                    <p class="text-4xl xl:text-5xl font-bold text-center text-yellow-400 dark:text-red-600">Unavailable soon</p>
+                {% else %}
+                    <p class="text-4xl xl:text-5xl font-bold text-center text-green-500 dark:text-green-500">Available</p>
+                {% endif %}
+            {% else %}
+                {% if room.is_available_soon %}
+                    <p class="text-4xl xl:text-5xl font-bold text-center text-yellow-400 dark:text-red-600">Available soon</p>
+                {% else %}
+                    <p class="text-4xl xl:text-5xl font-bold text-center text-red-600 dark:text-red-600">Occupied</p>
+                {% endif %}
+            {% endif %}
+
+        </a>
+        {# Picture #}
+        <a href="#" class="flex flex-col bg-white border border-gray-200 rounded-lg shadow min-w-72 max-h-72">
+            <img class="object-cover w-full rounded-lg h-72" src="{% if room.picture %}{% get_static_prefix %}aubouleau_web/images/{{ room.picture }}{% endif %}" alt="{{ room.number }}-picture">
+        </a>
+        <div class="flex flex-col flex-grow gap-y-4 border border-gray-300 rounded-lg shadow px-4 py-3 w-full">
+            <div class="flex flex-col flex-grow gap-y-6">
+                <h4 class="text-2xl underline font-bold text-gray-900">Newest problems</h4>
+                <div class="flex flex-col gap-y-2.5">
+                    <a href="#" class="flex flex-col gap-y-2 px-6 py-2.5 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
+                        <div class="flex flex-row justify-between items-center">
+                            <h5 class="text-xl font-bold tracking-tight text-gray-900 dark:text-white">Missing chairs</h5>
+                            <p class="text-sm text-gray-400">17 mins ago</p>
+                        </div>
+                        <p class="text-sm font-normal text-gray-600 dark:text-gray-400">About 5 chairs are missing. Some students are sitting on the floor...</p>
+                    </a>
+                    <a href="#" class="flex flex-col gap-y-2 px-6 py-2.5 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
+                        <div class="flex flex-row justify-between items-center">
+                            <h5 class="text-xl font-bold tracking-tight text-gray-900 dark:text-white">Missing chairs</h5>
+                            <p class="text-sm text-gray-400">17 mins ago</p>
+                        </div>
+                        <p class="text-sm font-normal text-gray-600 dark:text-gray-400">About 5 chairs are missing. Some students are sitting on the floor...</p>
+                    </a>
+                    <a href="#" class="flex flex-col gap-y-2 px-6 py-2.5 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
+                        <div class="flex flex-row justify-between items-center">
+                            <h5 class="text-xl font-bold tracking-tight text-gray-900 dark:text-white">Missing chairs</h5>
+                            <p class="text-sm text-gray-400">17 mins ago</p>
+                        </div>
+                        <p class="text-sm font-normal text-gray-600 dark:text-gray-400">About 5 chairs are missing. Some students are sitting on the floor...</p>
+                    </a>
+                </div>
+            </div>
+            <a class="flex flex-row justify-end items-center text-green-500 hover:text-green-700" href="#">
+                <p class="text-sm uppercase font-semibold">View more</p>
+                <svg class="w-6 h-6 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m10 16 4-4-4-4"></path>
+                </svg>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
