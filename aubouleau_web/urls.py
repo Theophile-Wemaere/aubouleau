@@ -45,6 +45,19 @@ urlpatterns = [
     # Example: https://aubouleau.fr/administration/floors/delete/NDL/0
     path("administration/floors/delete/<str:building_name>/<int:floor_number>/", views.administration_floors_delete, name="administration_floors_delete"),
 
+    # /administration/rooms
+    # Example: https://aubouleau.fr/administration/rooms
+    path("administration/rooms/", views.administration_rooms, name="administration_rooms"),
+    # /administration/rooms/new
+    # Example: https://aubouleau.fr/administration/rooms/new
+    path("administration/rooms/new", views.administration_rooms_new, name="administration_rooms_new"),
+    # /administration/rooms/edit/[room_number]
+    # Example: https://aubouleau.fr/administration/rooms/edit/L012
+    path("administration/rooms/edit/<str:room_number>/", views.administration_rooms_edit, name="administration_rooms_edit"),
+    # /administration/rooms/delete/[room_number]
+    # Example: https://aubouleau.fr/administration/rooms/delete/L012
+    path("administration/rooms/delete/<str:room_number>/", views.administration_rooms_delete, name="administration_rooms_delete"),
+
     # /buildings
     # Example: https://aubouleau.fr/buildings
     path("buildings/", views.buildings, name="buildings"),

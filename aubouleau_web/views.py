@@ -307,6 +307,107 @@ def administration_floors_delete(request, building_name, floor_number):
         return render(request, status=405, template_name="405.html")
 
 
+@login_required
+def administration_rooms(request):
+    """
+    Displays the rooms administration page.
+    :param request: The HTTP request.
+    :return: An HTTP response containing a page where rooms are displayed and can be modified.
+    """
+    # This is not the best way to manage permissions, but for the scope of this application, checking that the
+    # user is a member of the "Administrators" group is enough.
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    rooms_list = Room.objects.all().order_by('floor')
+
+    return render(request, "aubouleau_web/administration_rooms.html", {"rooms": rooms_list})
+
+
+@login_required()
+def administration_rooms_new(request):
+    """
+    Displays the page containing a form to add a new room
+    :param request: The HTTP request.
+    :return: An HTTP response containing a page with a form to add a new room.
+    """
+    # This is not the best way to manage permissions, but for the scope of this application, checking that the
+    # user is a member of the "Administrators" group is enough.
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    if request.method == 'GET':
+        floors_list = Floor.objects.all().order_by('building')
+        return render(request, "aubouleau_web/administration_rooms_new.html", {"floors": floors_list})
+    elif request.method == 'POST':
+        room_number = request.POST.get('room_number', None)
+        room_name = request.POST.get('room_name', None)
+        seats = request.POST.get('seats', None)
+        # TODO: Handle room picture upload
+        room_floor_id = request.POST.get('room_floor_id', None)
+
+        Room.objects.create(number=room_number, name=room_name, seats=seats, floor=Floor.objects.get(pk=room_floor_id), created_at=timezone.now())
+        return redirect("aubouleau_web:administration_rooms")
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+@login_required()
+def administration_rooms_edit(request, room_number):
+    """
+    Displays the page containing a form to edit an existing room
+    :param request: The HTTP request.
+    :param room_number: The number of the room to edit.
+    :return: An HTTP response containing a page with a form to edit an existing room
+    """
+    # This is not the best way to manage permissions, but for the scope of this application, checking that the
+    # user is a member of the "Administrators" group is enough.
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    if request.method == 'GET':
+        floors_list = Floor.objects.all().order_by('building')
+        room = Room.objects.get(number=room_number)
+        return render(request, "aubouleau_web/administration_rooms_edit.html", {"floors": floors_list, "room": room})
+    elif request.method == 'POST':
+        room = Room.objects.get(number=room_number)
+        room_number = request.POST.get('room_number', None)
+        room_name = request.POST.get('room_name', None)
+        seats = request.POST.get('seats', None)
+        room_floor_id = request.POST.get('room_floor_id', None)
+        # TODO: Handle room picture upload
+
+        room.number = room_number
+        room.name = room_name
+        room.seats = seats
+        room.floor = Floor.objects.get(pk=room_floor_id)
+        room.save()
+        return redirect("aubouleau_web:administration_rooms")
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+@login_required()
+def administration_rooms_delete(request, room_number):
+    """
+    Deletes an existing room from the database. This method only handles POST requests.
+    :param request: The HTTP request.
+    :param room_number: The number of the room to delete.
+    :return: An HTTP 302 response to the rooms administration page.
+    """
+    # This is not the best way to manage permissions, but for the scope of this application, checking that the
+    # user is a member of the "Administrators" group is enough.
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    if request.method == 'POST':
+        room = Room.objects.get(number=room_number)
+        room.delete()
+        return redirect("aubouleau_web:administration_rooms")
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
 def buildings(request):
     """
     Displays the list of all the :py:class:`Building`.
