@@ -8,7 +8,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.utils import timezone
 from django.utils.timezone import localtime, make_aware
 
-from .models import Building, Room, TimeSlot
+from .models import Building, Floor, Room, TimeSlot
 
 
 def index(request):
@@ -126,7 +126,7 @@ def administration_buildings(request):
     :param request: The HTTP request.
     :return: An HTTP response containing a page where buildings are displayed and can be modified.
     """
-    # This is not the best way to manage permissions, but for the sake of this application, checking that the
+    # This is not the best way to manage permissions, but for the scope of this application, checking that the
     # user is a member of the "Administrators" group is enough.
     if not request.user.groups.filter(name="Administrators").exists():
         raise PermissionDenied()
@@ -143,7 +143,7 @@ def administration_buildings_new(request):
     :param request: The HTTP request.
     :return: An HTTP response containing a page with a form to add a new building.
     """
-    # This is not the best way to manage permissions, but for the sake of this application, checking that the
+    # This is not the best way to manage permissions, but for the scope of this application, checking that the
     # user is a member of the "Administrators" group is enough.
     if not request.user.groups.filter(name="Administrators").exists():
         raise PermissionDenied()
@@ -167,7 +167,7 @@ def administration_buildings_edit(request, building_name):
     :param building_name: The name of the building to edit.
     :return: An HTTP response containing a page with a form to edit an existing building
     """
-    # This is not the best way to manage permissions, but for the sake of this application, checking that the
+    # This is not the best way to manage permissions, but for the scope of this application, checking that the
     # user is a member of the "Administrators" group is enough.
     if not request.user.groups.filter(name="Administrators").exists():
         raise PermissionDenied()
@@ -194,7 +194,7 @@ def administration_buildings_delete(request, building_name):
     :param building_name: The name of the building to delete.
     :return: An HTTP 302 response to the buildings administration page.
     """
-    # This is not the best way to manage permissions, but for the sake of this application, checking that the
+    # This is not the best way to manage permissions, but for the scope of this application, checking that the
     # user is a member of the "Administrators" group is enough.
     if not request.user.groups.filter(name="Administrators").exists():
         raise PermissionDenied()
@@ -203,6 +203,106 @@ def administration_buildings_delete(request, building_name):
         building = Building.objects.get(name=building_name)
         building.delete()
         return redirect("aubouleau_web:administration_buildings")
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+@login_required
+def administration_floors(request):
+    """
+    Displays the floors administration page.
+    :param request: The HTTP request.
+    :return: An HTTP response containing a page where floors are displayed and can be modified.
+    """
+    # This is not the best way to manage permissions, but for the scope of this application, checking that the
+    # user is a member of the "Administrators" group is enough.
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    floors_list = Floor.objects.all().order_by('building')
+
+    return render(request, "aubouleau_web/administration_floors.html", {"floors": floors_list})
+
+
+@login_required()
+def administration_floors_new(request):
+    """
+    Displays the page containing a form to add a new floor
+    :param request: The HTTP request.
+    :return: An HTTP response containing a page with a form to add a new floor.
+    """
+    # This is not the best way to manage permissions, but for the scope of this application, checking that the
+    # user is a member of the "Administrators" group is enough.
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    if request.method == 'GET':
+        buildings_list = Building.objects.all()
+        return render(request, "aubouleau_web/administration_floors_new.html", {"buildings": buildings_list})
+    elif request.method == 'POST':
+        floor_name = request.POST.get('floor_name', None)
+        floor_number = request.POST.get('floor_number', None)
+        floor_building_id = request.POST.get('floor_building_id', None)
+        Floor.objects.create(name=floor_name, number=floor_number, building=Building.objects.get(pk=floor_building_id), created_at=timezone.now())
+        return redirect("aubouleau_web:administration_floors")
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+@login_required()
+def administration_floors_edit(request, building_name, floor_number):
+    """
+    Displays the page containing a form to edit an existing floor
+    :param request: The HTTP request.
+    :param building_name: The name of the floor's building.
+    :param floor_number: The number of the floor to edit.
+    :return: An HTTP response containing a page with a form to edit an existing floor
+    """
+    # This is not the best way to manage permissions, but for the scope of this application, checking that the
+    # user is a member of the "Administrators" group is enough.
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    if request.method == 'GET':
+        buildings_list = Building.objects.all()
+        building = Building.objects.get(name=building_name)
+        floor = building.floor_set.get(number=floor_number)
+        return render(request, "aubouleau_web/administration_floors_edit.html", {"buildings": buildings_list, "floor": floor})
+    elif request.method == 'POST':
+        building = Building.objects.get(name=building_name)
+        floor = building.floor_set.get(number=floor_number)
+        floor_name = request.POST.get('floor_name', None)
+        floor_number = request.POST.get('floor_number', None)
+        floor_building_id = request.POST.get('floor_building_id', None)
+
+        floor.name = floor_name
+        floor.number = floor_number
+        floor.building = Building.objects.get(pk=floor_building_id)
+        floor.save()
+        return redirect("aubouleau_web:administration_floors")
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+@login_required()
+def administration_floors_delete(request, building_name, floor_number):
+    """
+    Deletes an existing floor from the database. This method only handles POST requests.
+    :param request: The HTTP request.
+    :param building_name: The name of the floor's building.
+    :param floor_number: The number of the floor to delete.
+    :return: An HTTP 302 response to the floors administration page.
+    """
+    # This is not the best way to manage permissions, but for the scope of this application, checking that the
+    # user is a member of the "Administrators" group is enough.
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    if request.method == 'POST':
+        building = Building.objects.get(name=building_name)
+        floor = building.floor_set.get(number=floor_number)
+        floor.delete()
+        return redirect("aubouleau_web:administration_floors")
     else:
         return render(request, status=405, template_name="405.html")
 

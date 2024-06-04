@@ -32,6 +32,19 @@ urlpatterns = [
     # Example: https://aubouleau.fr/administration/buildings/delete/NDL
     path("administration/buildings/delete/<str:building_name>/", views.administration_buildings_delete, name="administration_buildings_delete"),
 
+    # /administration/floors
+    # Example: https://aubouleau.fr/administration/floors
+    path("administration/floors/", views.administration_floors, name="administration_floors"),
+    # /administration/floors/new
+    # Example: https://aubouleau.fr/administration/floors/new
+    path("administration/floors/new", views.administration_floors_new, name="administration_floors_new"),
+    # /administration/floors/edit/[building_name/[floor_number]
+    # Example: https://aubouleau.fr/administration/floors/edit/NDL/0
+    path("administration/floors/edit/<str:building_name>/<int:floor_number>/", views.administration_floors_edit, name="administration_floors_edit"),
+    # /administration/floors/delete/[building_name]/[floor_number]
+    # Example: https://aubouleau.fr/administration/floors/delete/NDL/0
+    path("administration/floors/delete/<str:building_name>/<int:floor_number>/", views.administration_floors_delete, name="administration_floors_delete"),
+
     # /buildings
     # Example: https://aubouleau.fr/buildings
     path("buildings/", views.buildings, name="buildings"),
