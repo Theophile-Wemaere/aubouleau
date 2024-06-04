@@ -62,21 +62,27 @@ urlpatterns = [
     # Example: https://aubouleau.fr/buildings
     path("buildings/", views.buildings, name="buildings"),
     # /[building_name]
-    # Example: https://aubouleau.fr/NDC
+    # Example: https://aubouleau.fr/NDL
     path("<str:building_name>/", views.building_detail, name="building_detail"),
     # /[building_name]/floors
-    # Example: https://aubouleau.fr/NDC/floors
+    # Example: https://aubouleau.fr/NDL/floors
     path("<str:building_name>/floors/", views.building_floors, name="building_floors"),
     # /[building_name]/floors/[floor_number]
-    # Example: https://aubouleau.fr/NDC/floors/0
+    # Example: https://aubouleau.fr/NDL/floors/0
     path("<str:building_name>/floors/<int:floor_number>/", views.floor_detail, name="floor_detail"),
     # /[building_name]/floors/[floor_number]/rooms
-    # Example: https://aubouleau.fr/NDC/floors/0/rooms
+    # Example: https://aubouleau.fr/NDL/floors/0/rooms
     path("<str:building_name>/floors/<int:floor_number>/rooms/", views.floor_rooms, name="floor_rooms"),
+    # /[building_name]/floors/[floor_number]/equipment
+    # Example: https://aubouleau.fr/NDL/floors/1/equipment
+path("<str:building_name>/floors/<int:floor_number>/equipment/", views.floor_equipment, name="floor_equipment"),
     # /[building_name]/rooms
-    # Example: https://aubouleau.fr/NDC/rooms
+    # Example: https://aubouleau.fr/NDL/rooms
     path("<str:building_name>/rooms/", views.building_rooms, name="building_rooms"),
     # /[building_name]/rooms/[room_number]
-    # Example: https://aubouleau.fr/NDC/rooms/L012
+    # Example: https://aubouleau.fr/NDL/rooms/L012
     path("<str:building_name>/rooms/<str:room_number>/", views.room_detail, name="room-detail"),
+    # /[building_name]/equipment
+    # Example: https://aubouleau.fr/NDL/equipment
+    path("<str:building_name>/equipment/", views.building_equipment, name="building_equipment"),
 ]
