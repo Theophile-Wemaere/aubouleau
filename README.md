@@ -20,7 +20,8 @@ In order to start developing on the project, create a `.env` file at the root of
 ```properties
 # Set to 0 to disable Debug mode (the Django webserver will NOT serve static files !)
 DEBUG=1
-# Generate your own [SECRET_KEY](https://docs.djangoproject.com/en/5.0/ref/settings/#std-setting-SECRET_KEY) and do not share it !
+# Generate your own SECRET_KEY and do not share it !
+# (See: https://docs.djangoproject.com/en/5.0/ref/settings/#std-setting-SECRET_KEY)
 SECRET_KEY=[a secure string]
 DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
 CSRF_TRUSTED_ORIGINS=http://localhost http://127.0.0.1
