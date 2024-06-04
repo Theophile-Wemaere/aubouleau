@@ -8,7 +8,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.utils import timezone
 from django.utils.timezone import localtime, make_aware
 
-from .models import Building, Room, TimeSlot
+from .models import Building, Floor, Room, TimeSlot, Equipment, EquipmentType
 
 
 def index(request):
@@ -126,7 +126,7 @@ def administration_buildings(request):
     :param request: The HTTP request.
     :return: An HTTP response containing a page where buildings are displayed and can be modified.
     """
-    # This is not the best way to manage permissions, but for the sake of this application, checking that the
+    # This is not the best way to manage permissions, but for the scope of this application, checking that the
     # user is a member of the "Administrators" group is enough.
     if not request.user.groups.filter(name="Administrators").exists():
         raise PermissionDenied()
@@ -143,7 +143,7 @@ def administration_buildings_new(request):
     :param request: The HTTP request.
     :return: An HTTP response containing a page with a form to add a new building.
     """
-    # This is not the best way to manage permissions, but for the sake of this application, checking that the
+    # This is not the best way to manage permissions, but for the scope of this application, checking that the
     # user is a member of the "Administrators" group is enough.
     if not request.user.groups.filter(name="Administrators").exists():
         raise PermissionDenied()
@@ -167,7 +167,7 @@ def administration_buildings_edit(request, building_name):
     :param building_name: The name of the building to edit.
     :return: An HTTP response containing a page with a form to edit an existing building
     """
-    # This is not the best way to manage permissions, but for the sake of this application, checking that the
+    # This is not the best way to manage permissions, but for the scope of this application, checking that the
     # user is a member of the "Administrators" group is enough.
     if not request.user.groups.filter(name="Administrators").exists():
         raise PermissionDenied()
@@ -194,7 +194,7 @@ def administration_buildings_delete(request, building_name):
     :param building_name: The name of the building to delete.
     :return: An HTTP 302 response to the buildings administration page.
     """
-    # This is not the best way to manage permissions, but for the sake of this application, checking that the
+    # This is not the best way to manage permissions, but for the scope of this application, checking that the
     # user is a member of the "Administrators" group is enough.
     if not request.user.groups.filter(name="Administrators").exists():
         raise PermissionDenied()
@@ -203,6 +203,312 @@ def administration_buildings_delete(request, building_name):
         building = Building.objects.get(name=building_name)
         building.delete()
         return redirect("aubouleau_web:administration_buildings")
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+@login_required
+def administration_floors(request):
+    """
+    Displays the floors administration page.
+    :param request: The HTTP request.
+    :return: An HTTP response containing a page where floors are displayed and can be modified.
+    """
+    # This is not the best way to manage permissions, but for the scope of this application, checking that the
+    # user is a member of the "Administrators" group is enough.
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    floors_list = Floor.objects.all().order_by('building')
+
+    return render(request, "aubouleau_web/administration_floors.html", {"floors": floors_list})
+
+
+@login_required()
+def administration_floors_new(request):
+    """
+    Displays the page containing a form to add a new floor
+    :param request: The HTTP request.
+    :return: An HTTP response containing a page with a form to add a new floor.
+    """
+    # This is not the best way to manage permissions, but for the scope of this application, checking that the
+    # user is a member of the "Administrators" group is enough.
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    if request.method == 'GET':
+        buildings_list = Building.objects.all()
+        return render(request, "aubouleau_web/administration_floors_new.html", {"buildings": buildings_list})
+    elif request.method == 'POST':
+        floor_name = request.POST.get('floor_name', None)
+        floor_number = request.POST.get('floor_number', None)
+        floor_building_id = request.POST.get('floor_building_id', None)
+        Floor.objects.create(name=floor_name, number=floor_number, building=Building.objects.get(pk=floor_building_id), created_at=timezone.now())
+        return redirect("aubouleau_web:administration_floors")
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+@login_required()
+def administration_floors_edit(request, building_name, floor_number):
+    """
+    Displays the page containing a form to edit an existing floor
+    :param request: The HTTP request.
+    :param building_name: The name of the floor's building.
+    :param floor_number: The number of the floor to edit.
+    :return: An HTTP response containing a page with a form to edit an existing floor
+    """
+    # This is not the best way to manage permissions, but for the scope of this application, checking that the
+    # user is a member of the "Administrators" group is enough.
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    if request.method == 'GET':
+        buildings_list = Building.objects.all()
+        building = Building.objects.get(name=building_name)
+        floor = building.floor_set.get(number=floor_number)
+        return render(request, "aubouleau_web/administration_floors_edit.html", {"buildings": buildings_list, "floor": floor})
+    elif request.method == 'POST':
+        building = Building.objects.get(name=building_name)
+        floor = building.floor_set.get(number=floor_number)
+        floor_name = request.POST.get('floor_name', None)
+        floor_number = request.POST.get('floor_number', None)
+        floor_building_id = request.POST.get('floor_building_id', None)
+
+        floor.name = floor_name
+        floor.number = floor_number
+        floor.building = Building.objects.get(pk=floor_building_id)
+        floor.save()
+        return redirect("aubouleau_web:administration_floors")
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+@login_required()
+def administration_floors_delete(request, building_name, floor_number):
+    """
+    Deletes an existing floor from the database. This method only handles POST requests.
+    :param request: The HTTP request.
+    :param building_name: The name of the floor's building.
+    :param floor_number: The number of the floor to delete.
+    :return: An HTTP 302 response to the floors administration page.
+    """
+    # This is not the best way to manage permissions, but for the scope of this application, checking that the
+    # user is a member of the "Administrators" group is enough.
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    if request.method == 'POST':
+        building = Building.objects.get(name=building_name)
+        floor = building.floor_set.get(number=floor_number)
+        floor.delete()
+        return redirect("aubouleau_web:administration_floors")
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+@login_required
+def administration_rooms(request):
+    """
+    Displays the rooms administration page.
+    :param request: The HTTP request.
+    :return: An HTTP response containing a page where rooms are displayed and can be modified.
+    """
+    # This is not the best way to manage permissions, but for the scope of this application, checking that the
+    # user is a member of the "Administrators" group is enough.
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    rooms_list = Room.objects.all().order_by('floor')
+
+    return render(request, "aubouleau_web/administration_rooms.html", {"rooms": rooms_list})
+
+
+@login_required()
+def administration_rooms_new(request):
+    """
+    Displays the page containing a form to add a new room
+    :param request: The HTTP request.
+    :return: An HTTP response containing a page with a form to add a new room.
+    """
+    # This is not the best way to manage permissions, but for the scope of this application, checking that the
+    # user is a member of the "Administrators" group is enough.
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    if request.method == 'GET':
+        floors_list = Floor.objects.all().order_by('building')
+        return render(request, "aubouleau_web/administration_rooms_new.html", {"floors": floors_list})
+    elif request.method == 'POST':
+        room_number = request.POST.get('room_number', None)
+        room_name = request.POST.get('room_name', None)
+        seats = request.POST.get('seats', None)
+        # TODO: Handle room picture upload
+        room_floor_id = request.POST.get('room_floor_id', None)
+
+        Room.objects.create(number=room_number, name=room_name, seats=seats, floor=Floor.objects.get(pk=room_floor_id), created_at=timezone.now())
+        return redirect("aubouleau_web:administration_rooms")
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+@login_required()
+def administration_rooms_edit(request, room_number):
+    """
+    Displays the page containing a form to edit an existing room
+    :param request: The HTTP request.
+    :param room_number: The number of the room to edit.
+    :return: An HTTP response containing a page with a form to edit an existing room
+    """
+    # This is not the best way to manage permissions, but for the scope of this application, checking that the
+    # user is a member of the "Administrators" group is enough.
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    if request.method == 'GET':
+        floors_list = Floor.objects.all().order_by('building')
+        room = Room.objects.get(number=room_number)
+        return render(request, "aubouleau_web/administration_rooms_edit.html", {"floors": floors_list, "room": room})
+    elif request.method == 'POST':
+        room = Room.objects.get(number=room_number)
+        room_number = request.POST.get('room_number', None)
+        room_name = request.POST.get('room_name', None)
+        seats = request.POST.get('seats', None)
+        room_floor_id = request.POST.get('room_floor_id', None)
+        # TODO: Handle room picture upload
+
+        room.number = room_number
+        room.name = room_name
+        room.seats = seats
+        room.floor = Floor.objects.get(pk=room_floor_id)
+        room.save()
+        return redirect("aubouleau_web:administration_rooms")
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+@login_required()
+def administration_rooms_delete(request, room_number):
+    """
+    Deletes an existing room from the database. This method only handles POST requests.
+    :param request: The HTTP request.
+    :param room_number: The number of the room to delete.
+    :return: An HTTP 302 response to the rooms administration page.
+    """
+    # This is not the best way to manage permissions, but for the scope of this application, checking that the
+    # user is a member of the "Administrators" group is enough.
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    if request.method == 'POST':
+        room = Room.objects.get(number=room_number)
+        room.delete()
+        return redirect("aubouleau_web:administration_rooms")
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+@login_required
+def administration_equipment(request):
+    """
+    Displays the equipment administration page.
+    :param request: The HTTP request.
+    :return: An HTTP response containing a page where equipment is displayed and can be modified.
+    """
+    # This is not the best way to manage permissions, but for the scope of this application, checking that the
+    # user is a member of the "Administrators" group is enough.
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    equipment_list = Equipment.objects.all().order_by('room')
+
+    return render(request, "aubouleau_web/administration_equipment.html", {"equipment_list": equipment_list})
+
+
+@login_required()
+def administration_equipment_new(request):
+    """
+    Displays the page containing a form to add a new piece of equipment
+    :param request: The HTTP request.
+    :return: An HTTP response containing a page with a form to add a new piece of equipment.
+    """
+    # This is not the best way to manage permissions, but for the scope of this application, checking that the
+    # user is a member of the "Administrators" group is enough.
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    if request.method == 'GET':
+        equipment_type_list = EquipmentType.objects.all().order_by('name')
+        rooms_list = Room.objects.all().order_by('floor')
+        return render(request, "aubouleau_web/administration_equipment_new.html", {"equipment_types": equipment_type_list, "rooms": rooms_list})
+    elif request.method == 'POST':
+        equipment_name = request.POST.get('equipment_name', None)
+        equipment_manufacturer = request.POST.get('equipment_manufacturer', None)
+        equipment_model = request.POST.get('equipment_model', None)
+        equipment_type_id = request.POST.get('equipment_type_id', None)
+        equipment_room_id = request.POST.get('equipment_room_id', None)
+        # TODO: Handle equipment picture upload
+        Equipment.objects.create(name=equipment_name, manufacturer=equipment_manufacturer, model=equipment_model, type=EquipmentType.objects.get(pk=equipment_type_id), room=Room.objects.get(pk=equipment_room_id), created_at=timezone.now())
+        return redirect("aubouleau_web:administration_equipment")
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+@login_required()
+def administration_equipment_edit(request, equipment_id):
+    """
+    Displays the page containing a form to edit an existing piece of equipment
+    :param request: The HTTP request.
+    :param equipment_id: The id of the piece of equipment to edit.
+    :return: An HTTP response containing a page with a form to edit an existing piece of equipment
+    """
+    # This is not the best way to manage permissions, but for the scope of this application, checking that the
+    # user is a member of the "Administrators" group is enough.
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    if request.method == 'GET':
+        equipment = Equipment.objects.get(pk=equipment_id)
+        equipment_type_list = EquipmentType.objects.all().order_by('name')
+        rooms_list = Room.objects.all().order_by('floor')
+        return render(request, "aubouleau_web/administration_equipment_edit.html", {"equipment_types": equipment_type_list, "rooms": rooms_list, "equipment": equipment})
+    elif request.method == 'POST':
+        equipment = Equipment.objects.get(pk=equipment_id)
+        equipment_name = request.POST.get('equipment_name', None)
+        equipment_manufacturer = request.POST.get('equipment_manufacturer', None)
+        equipment_model = request.POST.get('equipment_model', None)
+        # TODO: Handle equipment picture upload
+        equipment_type_id = request.POST.get('equipment_type_id', None)
+        equipment_room_id = request.POST.get('equipment_room_id', None)
+
+        equipment.name = equipment_name
+        equipment.manufacturer = equipment_manufacturer
+        equipment.model = equipment_model
+        equipment.type = EquipmentType.objects.get(pk=equipment_type_id)
+        equipment.room = Room.objects.get(pk=equipment_room_id)
+        equipment.save()
+        return redirect("aubouleau_web:administration_equipment")
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+@login_required()
+def administration_equipment_delete(request, equipment_id):
+    """
+    Deletes an existing piece of equipment from the database. This method only handles POST requests.
+    :param request: The HTTP request.
+    :param equipment_id: The id of the piece of equipment to delete.
+    :return: An HTTP 302 response to the equipment administration page.
+    """
+    # This is not the best way to manage permissions, but for the scope of this application, checking that the
+    # user is a member of the "Administrators" group is enough.
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    if request.method == 'POST':
+        equipment = Equipment.objects.get(pk=equipment_id)
+        equipment.delete()
+        return redirect("aubouleau_web:administration_equipment")
     else:
         return render(request, status=405, template_name="405.html")
 
@@ -227,7 +533,8 @@ def building_detail(request, building_name):
     building = get_object_or_404(Building, name=building_name)
     floors_list = building.floor_set.all()
     rooms_list = building.get_all_rooms()
-    return render(request, "aubouleau_web/building_detail.html", {"building": building, "floors": floors_list, "rooms": rooms_list})
+    equipment_list = building.get_all_equipment()
+    return render(request, "aubouleau_web/building_detail.html", {"building": building, "floors": floors_list, "rooms": rooms_list, "equipment_list": equipment_list})
 
 
 def building_floors(request, building_name):
@@ -253,7 +560,8 @@ def floor_detail(request, building_name, floor_number):
     building = Building.objects.get(name=building_name)
     floor = building.floor_set.get(number=floor_number)
     rooms_list = floor.room_set.all()
-    return render(request, "aubouleau_web/floor_detail.html", {"building": building, "floor": floor, "rooms": rooms_list})
+    equipment_list = floor.get_all_equipment()
+    return render(request, "aubouleau_web/floor_detail.html", {"building": building, "floor": floor, "rooms": rooms_list, "equipment_list": equipment_list})
 
 
 def floor_rooms(request, building_name, floor_number):
@@ -261,13 +569,27 @@ def floor_rooms(request, building_name, floor_number):
     Displays the list of all the :py:class:`Room` of the relevant :py:class:`Floor`.
     :param request: The HTTP request.
     :param building_name: The name of the :py:class:`Building` the :py:class:`Floor` belongs to.
-    :param floor_number: The number of the :py:class:`Floor` to show the details for.
+    :param floor_number: The number of the :py:class:`Floor` to show the rooms of.
     :return: An HTTP response containing a page with all the available rooms of the relevant :py:class:`Floor`.
     """
     building = Building.objects.get(name=building_name)
     floor = building.floor_set.get(number=floor_number)
     rooms_list = floor.room_set.all()
     return render(request, "aubouleau_web/floor_rooms.html", {"building": building, "floor": floor, "rooms": rooms_list})
+
+
+def floor_equipment(request, building_name, floor_number):
+    """
+    Displays the list of all the :py:class:`Equipment` of the relevant :py:class:`Floor`.
+    :param request: The HTTP request.
+    :param building_name: The name of the :py:class:`Building` the :py:class:`Floor` belongs to.
+    :param floor_number: The number of the :py:class:`Floor` to show the equipment of.
+    :return: An HTTP response containing a page with all the available equipment of the relevant :py:class:`Floor`.
+    """
+    building = Building.objects.get(name=building_name)
+    floor = building.floor_set.get(number=floor_number)
+    equipment_list = floor.get_all_equipment()
+    return render(request, "aubouleau_web/floor_equipment.html", {"building": building, "floor": floor, "equipment_list": equipment_list})
 
 
 def building_rooms(request, building_name):
@@ -323,3 +645,15 @@ def room_detail(request, building_name, room_number):
         time_slots_list.append((TimeSlot(subject="Room is available", start_time=previous_time_slot.end_time, end_time=day_end, created_at=timezone.now(), room=previous_time_slot.room), True))
 
     return render(request, "aubouleau_web/room_detail.html", {"building": building, "room": room, "time_slots": time_slots_list})
+
+
+def building_equipment(request, building_name):
+    """
+    Displays the list of all the :py:class:`Equipment` of the relevant :py:class:`Building`.
+    :param request: The HTTP request.
+    :param building_name: The name of the :py:class:`Building` the :py:class:`Equipment` belongs to.
+    :return: An HTTP response containing a page with all the available equipment of the relevant :py:class:`Building`.
+    """
+    building = Building.objects.get(name=building_name)
+    equipment_list = building.get_all_equipment()
+    return render(request, "aubouleau_web/building_equipment.html", {"building": building, "equipment_list": equipment_list})

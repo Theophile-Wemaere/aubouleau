@@ -162,6 +162,7 @@
                                             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 4h3a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3m0 3h6m-3 5h3m-6 0h.01M12 16h3m-6 0h.01M10 3v4h4V3h-4Z"></path>
                                         </svg>
                                         <span class="flex-1 ms-3 whitespace-nowrap">Equipment</span>
+                                        {# TODO: Either remove this menu, or use it do browse equipment TYPES #}
                                     </a>
                                 </li>
                                 <li>
@@ -190,8 +191,9 @@
                                     </button>
                                     <ul id="dropdown-administration" class="hidden py-2 space-y-2">
                                         <li><a href="{% url 'aubouleau_web:administration_buildings' %}" class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Buildings</a></li>
-                                        <li><a href="#" class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Floors</a></li>
-                                        <li><a href="#" class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Rooms</a></li>
+                                        <li><a href="{% url 'aubouleau_web:administration_floors' %}" class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Floors</a></li>
+                                        <li><a href="{% url 'aubouleau_web:administration_rooms' %}" class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Rooms</a></li>
+                                        <li><a href="{% url 'aubouleau_web:administration_equipment' %}" class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Equipment</a></li>
                                     </ul>
                                 </li>
                             </ul>

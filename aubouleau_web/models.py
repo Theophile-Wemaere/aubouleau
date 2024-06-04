@@ -67,6 +67,13 @@ class Building(models.Model):
         """
         return Room.objects.filter(floor__building=self.id)
 
+    def get_all_equipment(self):
+        """
+        Fetches all the equipment contained in this :py:class:`Building`.
+        :return: A list of all the :py:class:`Equipment` contained in this :py:class:`Building`.
+        """
+        return Equipment.objects.filter(room__floor__building=self.id)
+
 
 class Floor(models.Model):
     """
@@ -94,6 +101,13 @@ class Floor(models.Model):
         :return: A list of all the :py:class:`Room` contained in this :py:class:`Floor`.
         """
         return self.room_set.all()
+
+    def get_all_equipment(self):
+        """
+        Fetches all the equipment contained in this :py:class:`Floor`.
+        :return: A list of all the :py:class:`Equipment` contained in this :py:class:`Floor`.
+        """
+        return Equipment.objects.filter(room__floor=self.id)
 
     class Meta:
         # A Building can't have two (or more) floors with the same number
@@ -300,3 +314,31 @@ class TimeSlot(models.Model):
 # This is due to the way django-crontab parses the settings.CRONJOBS list, see: https://github.com/kraiz/django-crontab/blob/master/django_crontab/crontab.py#L169-L172
 def update_time_slots():
     TimeSlot.update_time_slots()
+
+
+class EquipmentType(models.Model):
+    """
+    A class representing a generic type of :py:class:`Equipment`.
+    """
+    name = models.CharField(max_length=64, verbose_name="Equipment type name")
+    picture = models.CharField(max_length=4096, blank=True, default="")
+    created_at = models.DateTimeField("Creation timestamp")
+
+    def __str__(self):
+        return f'{self.name}'
+
+
+class Equipment(models.Model):
+    """
+    A class representing a physical piece of equipment in a :py:class:`Room`.
+    """
+    name = models.CharField(max_length=64, verbose_name="Equipment name")
+    manufacturer = models.CharField(max_length=64, verbose_name="Equipment manufacturer")
+    model = models.CharField(max_length=64, blank=True, verbose_name="Equipment model")
+    picture = models.CharField(max_length=4096, blank=True, default="")
+    created_at = models.DateTimeField("Creation timestamp")
+    room = models.ForeignKey(Room, null=True, on_delete=models.SET_NULL)
+    type = models.ForeignKey(EquipmentType, null=True, on_delete=models.SET_NULL)
+
+    def __str__(self):
+        return f'[{self.room.number}] [{self.type.name}] {self.name} | {self.manufacturer} {self.model}'
