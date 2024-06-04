@@ -471,3 +471,88 @@
     picture: "L417.png"
     created_at: "2024-05-13T10:00:00+02:00"
     floor: 12
+
+# Equipment types
+- model: aubouleau_web.EquipmentType
+  pk: 1
+  fields:
+    name: "Computers"
+    created_at: "2024-04-06T18:00:00+02:00"
+- model: aubouleau_web.EquipmentType
+  pk: 2
+  fields:
+    name: "Oscilloscopes"
+    created_at: "2024-04-06T18:00:00+02:00"
+- model: aubouleau_web.EquipmentType
+  pk: 3
+  fields:
+    name: "Soldering irons"
+    created_at: "2024-04-06T18:00:00+02:00"
+
+# Equipment
+
+# Computers
+- model: aubouleau_web.Equipment
+  pk: 1
+  fields:
+    name: "PC L114-1"
+    manufacturer: "Dell"
+    model: "Optiplex 3070 SFF"
+    picture: "Dell-Optiplex3070SFF.png"
+    created_at: "2024-04-06T18:00:00+02:00"
+    room: 26
+    type: 1
+- model: aubouleau_web.Equipment
+  pk: 2
+  fields:
+    name: "PC L114-2"
+    manufacturer: "Dell"
+    model: "Optiplex 3070 SFF"
+    picture: "Dell-Optiplex3070SFF.png"
+    created_at: "2024-04-06T18:00:00+02:00"
+    room: 26
+    type: 1
+
+# Oscilloscopes
+- model: aubouleau_web.Equipment
+  pk: 3
+  fields:
+    name: "Oscilloscope 1"
+    manufacturer: "Rigol"
+    model: "DS1000Z"
+    picture: "Rigol-DS1000Z.png"
+    created_at: "2024-04-06T18:00:00+02:00"
+    room: 26
+    type: 2
+- model: aubouleau_web.Equipment
+  pk: 4
+  fields:
+    name: "Oscilloscope 2"
+    manufacturer: "Rigol"
+    model: "DS1000Z"
+    picture: "Rigol-DS1000Z.png"
+    created_at: "2024-04-06T18:00:00+02:00"
+    room: 26
+    type: 2
+
+# Soldering irons
+- model: aubouleau_web.Equipment
+  pk: 5
+  fields:
+    name: "Fer à souder 1"
+    manufacturer: "Weller"
+    model: "WE 1010"
+    picture: "Weller-WE1010.png"
+    created_at: "2024-04-06T18:00:00+02:00"
+    room: 26
+    type: 3
+- model: aubouleau_web.Equipment
+  pk: 6
+  fields:
+    name: "Fer à souder 2"
+    manufacturer: "Weller"
+    model: "WE 1010"
+    picture: "Weller-WE1010.png"
+    created_at: "2024-04-06T18:00:00+02:00"
+    room: 26
+    type: 3
