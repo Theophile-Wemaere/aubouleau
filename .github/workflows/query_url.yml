@@ -1,0 +1,25 @@
+name: Query URL on Main Push or Merge
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+
+jobs:
+  query-url:
+    if: github.event.pull_request.merged == true || github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v2
+
+      - name: Query the URL
+        run: |
+          echo "Querying URL..."
+          curl -i -X GET "${{ secrets.SECRET_URL }}"
