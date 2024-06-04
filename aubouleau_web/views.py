@@ -8,7 +8,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.utils import timezone
 from django.utils.timezone import localtime, make_aware
 
-from .models import Building, Floor, Room, TimeSlot
+from .models import Building, Floor, Room, TimeSlot, Equipment, EquipmentType
 
 
 def index(request):
@@ -404,6 +404,111 @@ def administration_rooms_delete(request, room_number):
         room = Room.objects.get(number=room_number)
         room.delete()
         return redirect("aubouleau_web:administration_rooms")
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+@login_required
+def administration_equipment(request):
+    """
+    Displays the equipment administration page.
+    :param request: The HTTP request.
+    :return: An HTTP response containing a page where equipment is displayed and can be modified.
+    """
+    # This is not the best way to manage permissions, but for the scope of this application, checking that the
+    # user is a member of the "Administrators" group is enough.
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    equipment_list = Equipment.objects.all().order_by('room')
+
+    return render(request, "aubouleau_web/administration_equipment.html", {"equipment_list": equipment_list})
+
+
+@login_required()
+def administration_equipment_new(request):
+    """
+    Displays the page containing a form to add a new piece of equipment
+    :param request: The HTTP request.
+    :return: An HTTP response containing a page with a form to add a new piece of equipment.
+    """
+    # This is not the best way to manage permissions, but for the scope of this application, checking that the
+    # user is a member of the "Administrators" group is enough.
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    if request.method == 'GET':
+        equipment_type_list = EquipmentType.objects.all().order_by('name')
+        rooms_list = Room.objects.all().order_by('floor')
+        return render(request, "aubouleau_web/administration_equipment_new.html", {"equipment_types": equipment_type_list, "rooms": rooms_list})
+    elif request.method == 'POST':
+        equipment_name = request.POST.get('equipment_name', None)
+        equipment_manufacturer = request.POST.get('equipment_manufacturer', None)
+        equipment_model = request.POST.get('equipment_model', None)
+        equipment_type_id = request.POST.get('equipment_type_id', None)
+        equipment_room_id = request.POST.get('equipment_room_id', None)
+        # TODO: Handle equipment picture upload
+        Equipment.objects.create(name=equipment_name, manufacturer=equipment_manufacturer, model=equipment_model, type=EquipmentType.objects.get(pk=equipment_type_id), room=Room.objects.get(pk=equipment_room_id), created_at=timezone.now())
+        return redirect("aubouleau_web:administration_equipment")
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+@login_required()
+def administration_equipment_edit(request, equipment_id):
+    """
+    Displays the page containing a form to edit an existing piece of equipment
+    :param request: The HTTP request.
+    :param equipment_id: The id of the piece of equipment to edit.
+    :return: An HTTP response containing a page with a form to edit an existing piece of equipment
+    """
+    # This is not the best way to manage permissions, but for the scope of this application, checking that the
+    # user is a member of the "Administrators" group is enough.
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    if request.method == 'GET':
+        equipment = Equipment.objects.get(pk=equipment_id)
+        equipment_type_list = EquipmentType.objects.all().order_by('name')
+        rooms_list = Room.objects.all().order_by('floor')
+        return render(request, "aubouleau_web/administration_equipment_edit.html", {"equipment_types": equipment_type_list, "rooms": rooms_list, "equipment": equipment})
+    elif request.method == 'POST':
+        equipment = Equipment.objects.get(pk=equipment_id)
+        equipment_name = request.POST.get('equipment_name', None)
+        equipment_manufacturer = request.POST.get('equipment_manufacturer', None)
+        equipment_model = request.POST.get('equipment_model', None)
+        # TODO: Handle equipment picture upload
+        equipment_type_id = request.POST.get('equipment_type_id', None)
+        equipment_room_id = request.POST.get('equipment_room_id', None)
+
+        equipment.name = equipment_name
+        equipment.manufacturer = equipment_manufacturer
+        equipment.model = equipment_model
+        equipment.type = EquipmentType.objects.get(pk=equipment_type_id)
+        equipment.room = Room.objects.get(pk=equipment_room_id)
+        equipment.save()
+        return redirect("aubouleau_web:administration_equipment")
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+@login_required()
+def administration_equipment_delete(request, equipment_id):
+    """
+    Deletes an existing piece of equipment from the database. This method only handles POST requests.
+    :param request: The HTTP request.
+    :param equipment_id: The id of the piece of equipment to delete.
+    :return: An HTTP 302 response to the equipment administration page.
+    """
+    # This is not the best way to manage permissions, but for the scope of this application, checking that the
+    # user is a member of the "Administrators" group is enough.
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    if request.method == 'POST':
+        equipment = Equipment.objects.get(pk=equipment_id)
+        equipment.delete()
+        return redirect("aubouleau_web:administration_equipment")
     else:
         return render(request, status=405, template_name="405.html")
 
