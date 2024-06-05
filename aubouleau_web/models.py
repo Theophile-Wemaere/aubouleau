@@ -284,6 +284,7 @@ class TimeSlot(models.Model):
         # Delete all time slots to ensure there are no duplicates
         TimeSlot.objects.all().delete()
 
+        all_time_slots_created = True
         for room_number in room_numbers:
             print(f'Creating time slots for room {room_number}...', end="", flush=True)
 
@@ -293,14 +294,23 @@ class TimeSlot(models.Model):
             except Room.DoesNotExist:
                 continue
 
-            events = get_events_of_day(room_number, date.today())
-            for event in events:
-                # Extract the three values from the tuple
-                # All naive datetime objects are converted to aware datetime objects
-                start_datetime, end_datetime, subject = make_aware(event[0]) if is_naive(event[0]) else event[0], make_aware(event[1]) if is_naive(event[1]) else event[1], event[2]
-                room.timeslot_set.create(subject=subject, start_time=start_datetime, end_time=end_datetime, created_at=timezone.now())
-            print("\t[OK]")
-        print("All time slots have been successfully created.")
+            try:
+                events = get_events_of_day(room_number, date.today())
+            except Exception:
+                all_time_slots_created = False
+                print("\t[FAILED]")
+            else:
+                for event in events:
+                    # Extract the three values from the tuple
+                    # All naive datetime objects are converted to aware datetime objects
+                    start_datetime, end_datetime, subject = make_aware(event[0]) if is_naive(event[0]) else event[0], make_aware(event[1]) if is_naive(event[1]) else event[1], event[2]
+                    room.timeslot_set.create(subject=subject, start_time=start_datetime, end_time=end_datetime, created_at=timezone.now())
+                print("\t[OK]")
+
+        if all_time_slots_created:
+            print("All time slots have been successfully created.")
+        else:
+            print("[WARN] Some time slots could not be created (some room calendars may be missing).")
 
     def is_active_now(self) -> bool:
         """
