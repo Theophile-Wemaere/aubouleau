@@ -513,6 +513,95 @@ def administration_equipment_delete(request, equipment_id):
         return render(request, status=405, template_name="405.html")
 
 
+@login_required
+def administration_equipment_types(request):
+    """
+    Displays the equipment types administration page.
+    :param request: The HTTP request.
+    :return: An HTTP response containing a page where equipment types are displayed and can be modified.
+    """
+    # This is not the best way to manage permissions, but for the scope of this application, checking that the
+    # user is a member of the "Administrators" group is enough.
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    equipment_types_list = EquipmentType.objects.all().order_by('name')
+
+    return render(request, "aubouleau_web/administration_equipment_types.html", {"equipment_types": equipment_types_list})
+
+
+@login_required()
+def administration_equipment_types_new(request):
+    """
+    Displays the page containing a form to add a new equipment type
+    :param request: The HTTP request.
+    :return: An HTTP response containing a page with a form to add a new equipment type.
+    """
+    # This is not the best way to manage permissions, but for the scope of this application, checking that the
+    # user is a member of the "Administrators" group is enough.
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    if request.method == 'GET':
+        return render(request, "aubouleau_web/administration_equipment_types_new.html")
+    elif request.method == 'POST':
+        equipment_type_name = request.POST.get('equipment_type_name', None)
+        # TODO: Handle equipment type picture upload
+        EquipmentType.objects.create(name=equipment_type_name, created_at=timezone.now())
+        return redirect("aubouleau_web:administration_equipment_types")
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+@login_required()
+def administration_equipment_types_edit(request, equipment_type_name):
+    """
+    Displays the page containing a form to edit an existing equipment type
+    :param request: The HTTP request.
+    :param equipment_type_name: The name of the equipment type to edit.
+    :return: An HTTP response containing a page with a form to edit an existing equipment type
+    """
+    # This is not the best way to manage permissions, but for the scope of this application, checking that the
+    # user is a member of the "Administrators" group is enough.
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    if request.method == 'GET':
+        equipment_type = EquipmentType.objects.get(name=equipment_type_name)
+        return render(request, "aubouleau_web/administration_equipment_types_edit.html", {"equipment_type": equipment_type})
+    elif request.method == 'POST':
+        equipment_type = EquipmentType.objects.get(name=equipment_type_name)
+        equipment_type_name = request.POST.get('equipment_type_name', None)
+        # TODO: Handle equipment picture upload
+
+        equipment_type.name = equipment_type_name
+        equipment_type.save()
+        return redirect("aubouleau_web:administration_equipment_types")
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+@login_required()
+def administration_equipment_types_delete(request, equipment_type_name):
+    """
+    Deletes an existing equipment type from the database. This method only handles POST requests.
+    :param request: The HTTP request.
+    :param equipment_type_name: The name of the equipment type to delete.
+    :return: An HTTP 302 response to the equipment types administration page.
+    """
+    # This is not the best way to manage permissions, but for the scope of this application, checking that the
+    # user is a member of the "Administrators" group is enough.
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    if request.method == 'POST':
+        equipment_type = EquipmentType.objects.get(name=equipment_type_name)
+        equipment_type.delete()
+        return redirect("aubouleau_web:administration_equipment_types")
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
 def buildings(request):
     """
     Displays the list of all the :py:class:`Building`.

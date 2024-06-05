@@ -1,0 +1,77 @@
+{% extends "aubouleau_web/base.html" %}
+{% load static %}
+
+{% block title %}Aubouleau | Administration | Edit equipment type: {{ equipment_type.name }}{% endblock %}
+
+{% block breadcrumb %}
+<nav class="flex px-5 py-3 text-gray-700 border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700" aria-label="Breadcrumb">
+    <ol class="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
+        <li class="inline-flex items-center">
+            <a href="#" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-green-600 dark:text-gray-400 dark:hover:text-white">
+                <svg class="w-[12px] h-[12px] me-2.5 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                  <path fill-rule="evenodd" d="M9.586 2.586A2 2 0 0 1 11 2h2a2 2 0 0 1 2 2v.089l.473.196.063-.063a2.002 2.002 0 0 1 2.828 0l1.414 1.414a2 2 0 0 1 0 2.827l-.063.064.196.473H20a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-.089l-.196.473.063.063a2.002 2.002 0 0 1 0 2.828l-1.414 1.414a2 2 0 0 1-2.828 0l-.063-.063-.473.196V20a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-.089l-.473-.196-.063.063a2.002 2.002 0 0 1-2.828 0l-1.414-1.414a2 2 0 0 1 0-2.827l.063-.064L4.089 15H4a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2h.09l.195-.473-.063-.063a2 2 0 0 1 0-2.828l1.414-1.414a2 2 0 0 1 2.827 0l.064.063L9 4.089V4a2 2 0 0 1 .586-1.414ZM8 12a4 4 0 1 1 8 0 4 4 0 0 1-8 0Z" clip-rule="evenodd"></path>
+                </svg>
+                Administration
+            </a>
+        </li>
+        <li>
+            <div class="flex items-center">
+                <svg class="rtl:rotate-180 block w-3 h-3 mx-1 text-gray-400 " aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"></path>
+                </svg>
+                <a href="{% url 'aubouleau_web:administration_equipment_types' %}" class="ms-1 text-sm font-medium text-gray-700 hover:text-green-600 md:ms-2 dark:text-gray-400 dark:hover:text-white">Equipment types</a>
+            </div>
+        </li>
+        <li aria-current="page">
+            <div class="flex items-center">
+                <svg class="rtl:rotate-180  w-3 h-3 mx-1 text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"></path>
+                </svg>
+                <span class="ms-1 text-sm font-medium text-gray-500 md:ms-2 dark:text-gray-400">Edit: {{ equipment_type.name }}</span>
+            </div>
+        </li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="flex flex-wrap gap-x-20 gap-y-12 flex-grow items-center justify-center px-4 pb-4" id="content">
+    <div class="w-full flex flex-col gap-y-12 shadow-md border-gray-200 rounded px-8 py-6">
+        <h2 class="text-4xl underline font-bold">Edit equipment type - {{ equipment_type.name }}</h2>
+        <div class="flex flex-row justify-center">
+            <form class="w-[25%] flex flex-col gap-y-4" action="{% url 'aubouleau_web:administration_equipment_types_edit' equipment_type_name=equipment_type.name %}" method="post">
+                {% csrf_token %}
+                {# Equipment type name #}
+                <div>
+                    <label for="equipment_type_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Equipment type name</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 start-0 flex items-center ps-3.5 pointer-events-none">
+                            <svg class="w-5 h-5 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M5 7h14M5 12h14M5 17h14"></path>
+                            </svg>
+                        </div>
+                        <input type="text" id="equipment_type_name" name="equipment_type_name" value="{{ equipment_type.name }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-green-500 dark:focus:border-green-500" placeholder="Enter the name of the equipment" required>
+                    </div>
+                </div>
+                {# File upload #}
+                <div>
+                    <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white" for="equipment_type_picture">Equipment type picture</label>
+                    <input class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400" aria-describedby="equipment_type_picture_help" id="equipment_type_picture" name="equipment_type_picture" value="{{ equipment_type.picture }}" type="file">
+                    <div class="mt-1 text-sm text-gray-500 dark:text-gray-300" id="equipment_type_picture_help">
+                        Upload a custom picture for this equipment type
+                    </div>
+                </div>
+                {# Submit button #}
+                <div class="flex flex-row justify-center mt-4">
+                    <button type="submit" class="w-fit text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center">
+                        Save
+                        <svg class="w-4 h-4 text-white ms-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 11.917 9.724 16.5 19 7.5"></path>
+                        </svg>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

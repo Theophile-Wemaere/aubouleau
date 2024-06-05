@@ -71,6 +71,19 @@ urlpatterns = [
     # Example: https://aubouleau.fr/administration/equipment/delete/1
     path("administration/equipment/delete/<int:equipment_id>/", views.administration_equipment_delete, name="administration_equipment_delete"),
 
+    # /administration/equipment_types
+    # Example: https://aubouleau.fr/administration/equipment_types
+    path("administration/equipment_types/", views.administration_equipment_types, name="administration_equipment_types"),
+    # /administration/equipment_types/new
+    # Example: https://aubouleau.fr/administration/equipment_types/new
+    path("administration/equipment_types/new", views.administration_equipment_types_new, name="administration_equipment_types_new"),
+    # /administration/equipment_types/edit/[equipment_type_name]
+    # Example: https://aubouleau.fr/administration/equipment_types/edit/Computers
+    path("administration/equipment/edit/<str:equipment_type_name>/", views.administration_equipment_types_edit, name="administration_equipment_types_edit"),
+    # /administration/equipment_types/delete/[equipment_type_name]
+    # Example: https://aubouleau.fr/administration/equipment_types/delete/Computers
+    path("administration/equipment_types/delete/<str:equipment_type_name>/", views.administration_equipment_types_delete, name="administration_equipment_types_delete"),
+
     # /buildings
     # Example: https://aubouleau.fr/buildings
     path("buildings/", views.buildings, name="buildings"),
