@@ -320,7 +320,7 @@ class EquipmentType(models.Model):
     """
     A class representing a generic type of :py:class:`Equipment`.
     """
-    name = models.CharField(max_length=64, verbose_name="Equipment type name")
+    name = models.CharField(max_length=64, unique=True, verbose_name="Equipment type name")
     picture = models.CharField(max_length=4096, blank=True, default="")
     created_at = models.DateTimeField("Creation timestamp")
 
@@ -341,4 +341,4 @@ class Equipment(models.Model):
     type = models.ForeignKey(EquipmentType, null=True, on_delete=models.SET_NULL)
 
     def __str__(self):
-        return f'[{self.room.number}] [{self.type.name}] {self.name} | {self.manufacturer} {self.model}'
+        return f"[{self.room.number if self.room else 'NO ROOM'}] [{self.type.name if self.type else 'NO TYPE'}] {self.name} | {self.manufacturer} {self.model}"
