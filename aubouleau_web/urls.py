@@ -84,6 +84,35 @@ urlpatterns = [
     # Example: https://aubouleau.fr/administration/equipment_types/delete/Computers
     path("administration/equipment_types/delete/<str:equipment_type_name>/", views.administration_equipment_types_delete, name="administration_equipment_types_delete"),
 
+    # /problems
+    # Example: https://aubouleau.fr/problems
+    path("problems/", views.problems, name="problems"),
+    # /problems/closed
+    # Example: https://aubouleau.fr/problems/closed
+    path("problems/closed/", views.problems_closed, name="problems_closed"),
+    # /problems/[problem_id]
+    # Example: https://aubouleau.fr/problems/0
+    path("problems/<int:problem_id>/", views.problem_detail, name="problem_detail"),
+    # /problems/new
+    # Example: https://aubouleau.fr/problems/new
+    path("problems/new/", views.problems_new, name="problems_new"),
+    # /problems/solve/[problem_id]
+    # Example: https://aubouleau.fr/solve/delete/0
+    path("problems/solve/<int:problem_id>/", views.problems_solve, name="problems_solve"),
+    # /problems/close/[problem_id]
+    # Example: https://aubouleau.fr/close/delete/0
+    path("problems/close/<int:problem_id>/", views.problems_close, name="problems_close"),
+    # /problems/delete/[problem_id]
+    # Example: https://aubouleau.fr/problems/delete/0
+    path("problems/delete/<int:problem_id>/", views.problems_delete, name="problems_delete"),
+    # /problems/[problem_id]/comment/add
+    # Example: https://aubouleau.fr/problems/0/comment/add
+    path("problems/<int:problem_id>/comment/add/", views.problems_comment_add, name="problem_comment_add"),
+    # /problems/[problem_id]/comment/delete/[comment_id]
+    # Example: https://aubouleau.fr/problems/0/comment/delete/0
+    path("problems/<int:problem_id>/comment/delete/<int:comment_id>/", views.problems_comment_delete, name="problem_comment_delete"),
+
+
     # /buildings
     # Example: https://aubouleau.fr/buildings
     path("buildings/", views.buildings, name="buildings"),

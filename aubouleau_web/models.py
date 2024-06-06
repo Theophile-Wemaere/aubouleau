@@ -1,7 +1,10 @@
 import shutil
 from datetime import date, datetime, timedelta
+from math import floor
 
+from django.contrib.auth.models import User
 from django.db import models
+from django.db.models import Q
 from django.utils import timezone
 from django.utils.timezone import localtime, make_aware, is_naive
 
@@ -352,3 +355,116 @@ class Equipment(models.Model):
 
     def __str__(self):
         return f"[{self.room.number if self.room else 'NO ROOM'}] [{self.type.name if self.type else 'NO TYPE'}] {self.name} | {self.manufacturer} {self.model}"
+
+
+class Problem(models.Model):
+    status = models.CharField(max_length=32, verbose_name="Problem status")
+    title = models.CharField(max_length=64, verbose_name="Problem title")
+    description = models.TextField(verbose_name="Problem description")
+    created_at = models.DateTimeField("Creation timestamp")
+    room = models.ForeignKey(Room, null=True, blank=True, on_delete=models.SET_NULL)
+    equipment = models.ForeignKey(Equipment, null=True, blank=True, on_delete=models.SET_NULL)
+    reporter = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='reported_problems')
+    solver = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='solved_problems')
+
+    def __str__(self):
+        return f'#{self.id} {self.title} [{self.room.number if self.room else self.equipment.name}]'
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=Q(room__isnull=False) | Q(equipment__isnull=False),
+                name='not_both_null'
+            ),
+            models.CheckConstraint(
+                check=(Q(room__isnull=True) & Q(equipment__isnull=False)) | (Q(room__isnull=False) & Q(equipment__isnull=True)),
+                name='not_both_not_null'
+            ),
+        ]
+
+    def is_open(self):
+        """
+        Indicates if this problem is open.
+        :return: True if this problem's status is "OPEN", False otherwise.
+        """
+        return self.status == 'OPEN'
+
+    def is_solved(self):
+        """
+        Indicates if this problem is solved.
+        :return: True if this problem's status is "SOLVED", False otherwise.
+        """
+        return self.status == 'SOLVED'
+
+    def mark_solved(self, solved_by: User):
+        """
+        Marks this problem as "SOLVED" and saves the user who solved it.
+        """
+        self.status = 'SOLVED'
+        self.solver = solved_by
+        self.save()
+
+    def is_closed(self):
+        """
+        Indicates if this problem is closed.
+        :return: True if this problem's status is "CLOSED", False otherwise.
+        """
+        return self.status == 'CLOSED'
+
+    def mark_closed(self, closed_by: User):
+        """
+        Marks this problem as "CLOSED" and saves the user who closed it.
+        """
+        self.status = 'CLOSED'
+        self.solver = closed_by
+        self.save()
+
+    def get_time_elapsed_since_creation(self):
+        """
+        Returns a string that indicates the time elapsed since this problem was created.
+        :return: A string representing the time elapsed since this problem was created (ex:  "10s", "13d", "1y", etc.)
+        """
+        delta = timezone.now() - self.created_at
+        seconds, minutes, hours = delta.seconds, floor(delta.seconds / 60), floor(delta.seconds / 3600)
+        days = floor(hours / 24)
+        years = floor(days / 365)
+
+        if years >= 1:
+            return f'{years}y'
+        if days >= 1:
+            return f'{days}d'
+        if hours >= 1:
+            return f'{hours}h'
+        if minutes >= 1:
+            return f'{minutes}m'
+        return f'{seconds}s'
+
+
+class Comment(models.Model):
+    text = models.TextField(verbose_name="Text content")
+    created_at = models.DateTimeField("Creation timestamp")
+    problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
+    author = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
+
+    def __str__(self):
+        return f"Comment on #{self.problem.id} by {self.author.username if self.author else '[DELETED USER]'}: {self.text[:32]}"
+
+    def get_time_elapsed_since_creation(self):
+        """
+        Returns a string that indicates the time elapsed since this comment was created.
+        :return: A string representing the time elapsed since this comment was created (ex:  "10 seconds", "13 days", "1 year", etc.)
+        """
+        delta = timezone.now() - self.created_at
+        seconds, minutes, hours = delta.seconds, floor(delta.seconds / 60), floor(delta.seconds / 3600)
+        days = floor(hours / 24)
+        years = floor(days / 365)
+
+        if years >= 1:
+            return f"{years} year{'s' if years > 1 else ''}"
+        if days >= 1:
+            return f"{days} day{'s' if days > 1 else ''}"
+        if hours >= 1:
+            return f"{hours} hour{'s' if hours > 1 else ''}"
+        if minutes >= 1:
+            return f"{minutes} minute{'s' if minutes > 1 else ''}"
+        return f"{seconds} second{'s' if seconds > 1 else ''}"
