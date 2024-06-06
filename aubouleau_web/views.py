@@ -4,11 +4,12 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
+from django.db.models import Q
 from django.shortcuts import get_object_or_404, render, redirect
 from django.utils import timezone
 from django.utils.timezone import localtime, make_aware
 
-from .models import Building, Floor, Room, TimeSlot, Equipment, EquipmentType
+from .models import Building, Floor, Room, TimeSlot, Equipment, EquipmentType, Problem, Comment
 
 
 def index(request):
@@ -598,6 +599,185 @@ def administration_equipment_types_delete(request, equipment_type_name):
         equipment_type = EquipmentType.objects.get(name=equipment_type_name)
         equipment_type.delete()
         return redirect("aubouleau_web:administration_equipment_types")
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+def problems(request):
+    """
+    Displays the list of all the :py:class:`Problem` with the "OPEN" status.
+    :param request: The HTTP request.
+    :return: An HTTP response containing a page with all the open problems.
+    """
+    open_problems_list = Problem.objects.filter(status='OPEN').order_by('id')
+    return render(request, "aubouleau_web/problems.html", {"problems": open_problems_list})
+
+
+def problems_closed(request):
+    """
+    Displays the list of all the :py:class:`Problem` with the "CLOSED" or "SOLVED" status.
+    :param request: The HTTP request.
+    :return: An HTTP response containing a page with all the closed problems.
+    """
+    closed_problems_list = Problem.objects.filter(Q(status='SOLVED') | Q(status='CLOSED')).order_by('id')
+    return render(request, "aubouleau_web/problems_closed.html", {"problems": closed_problems_list})
+
+
+def problem_detail(request, problem_id):
+    """
+    Displays the details of a specific :py:class:`Problem`.
+    :param request: The HTTP request.
+    :param problem_id: The id of the problem to display the details of.
+    :return: An HTTP response containing a page with the details of the problem.
+    """
+    problem = Problem.objects.get(pk=problem_id)
+    comments = problem.comment_set.all().order_by('created_at')
+    return render(request, "aubouleau_web/problem_detail.html", {"problem": problem, "comments": comments})
+
+
+@login_required()
+def problems_new(request):
+    """
+    Displays the page containing a form to report a new problem
+    :param request: The HTTP request.
+    :return: An HTTP response containing a page with a form to report a new problem.
+    """
+    if request.method == 'GET':
+        rooms_list = Room.objects.all().order_by('floor')
+        equipment_list = Equipment.objects.all().order_by('type')
+        return render(request, "aubouleau_web/problems_new.html", {"rooms": rooms_list, "equipment_list": equipment_list})
+    elif request.method == 'POST':
+        title = request.POST.get('title', None)
+        description = request.POST.get('description', None)
+        room_id = request.POST.get('room_id', None)
+        equipment_id = request.POST.get('equipment_id', None)
+
+        # TODO: Fix this terribleness
+        # For the sake of your eyes, skip to line 675
+        # Proper server side validation would be way better, yes, but this will do it for now
+        if room_id == '':
+            room_id = None
+        if equipment_id == '':
+            equipment_id = None
+
+        try:
+            room = Room.objects.get(pk=room_id)
+        except Room.DoesNotExist:
+            room = None
+        try:
+            equipment = Equipment.objects.get(pk=equipment_id)
+        except Equipment.DoesNotExist:
+            equipment = None
+
+        if (not room and not equipment) or (room and equipment):
+            return render(request, status=400, template_name="400.html")
+
+        Problem.objects.create(status='OPEN', title=title, description=description, reporter=request.user, room=room, created_at=timezone.now())
+        return redirect("aubouleau_web:problems")
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+@login_required()
+def problems_solve(request, problem_id):
+    """
+    Marks an existing :py:class:`Problem` as "SOLVED". This method only handles POST requests.
+    :param request: The HTTP request.
+    :param problem_id: The id of the problem to mark as "SOLVED".
+    :return: An HTTP 302 to the problem detail page.
+    """
+    problem = Problem.objects.get(pk=problem_id)
+    # Only administrators can solve problems
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    if request.method == 'POST':
+        problem.mark_solved(solved_by=request.user)
+        return redirect("aubouleau_web:problem_detail", problem_id=problem_id)
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+@login_required()
+def problems_close(request, problem_id):
+    """
+    Marks an existing :py:class:`Problem` as "CLOSED". This method only handles POST requests.
+    :param request: The HTTP request.
+    :param problem_id: The id of the problem to mark as "CLOSED".
+    :return: An HTTP 302 to the problem detail page.
+    """
+    problem = Problem.objects.get(pk=problem_id)
+    # Only administrators can solve problems
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    if request.method == 'POST':
+        problem.mark_closed(closed_by=request.user)
+        return redirect("aubouleau_web:problem_detail", problem_id=problem_id)
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+@login_required()
+def problems_delete(request, problem_id):
+    """
+    Deletes an existing :py:class:`Problem`. This method only handles POST requests.
+    :param request: The HTTP request.
+    :param problem_id: The id of the problem to delete.
+    :return: An HTTP 302 to the problems page.
+    """
+    problem = Problem.objects.get(pk=problem_id)
+    # Only the problem's reporter or administrators can delete problems
+    if request.user != problem.reporter and request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    if request.method == 'POST':
+        problem.delete()
+        return redirect("aubouleau_web:problems")
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+@login_required()
+def problems_comment_add(request, problem_id):
+    """
+    Adds a comment to an existing :py:class:`Problem`. This method only handles POST requests.
+    :param request: The HTTP request.
+    :param problem_id: The id of the problem to add a comment on.
+    :return: An HTTP 302 to the detail page of the problem.
+    """
+    if request.method == 'POST':
+        problem = Problem.objects.get(pk=problem_id)
+
+        # Prevent comments from being posted on closed or resolved issues.
+        if not problem.is_open():
+            raise PermissionDenied()
+
+        text = request.POST.get('comment', None)
+        author = User.objects.get(pk=request.user.id)
+        problem.comment_set.create(text=text, author=author, created_at=timezone.now())
+        return redirect("aubouleau_web:problem_detail", problem_id=problem_id)
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+@login_required()
+def problems_comment_delete(request, problem_id, comment_id):
+    """
+    Deletes a comment from an existing :py:class:`Problem`. This method only handles POST requests.
+    :param request: The HTTP request.
+    :param problem_id: The id of the problem the comment is attached to.
+    :param comment_id: The id of the comment to delete.
+    :return: An HTTP 302 to the detail page of the problem.
+    """
+    comment = Comment.objects.get(pk=comment_id)
+    # Only the comment's author or administrators can delete comments
+    if request.user != comment.author and request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    if request.method == 'POST':
+        comment.delete()
+        return redirect("aubouleau_web:problem_detail", problem_id=problem_id)
     else:
         return render(request, status=405, template_name="405.html")
 
