@@ -122,6 +122,38 @@ def sign_out(request):
         return render(request, status=405, template_name="405.html")
 
 
+@login_required()
+def profile(request):
+    """
+    Displays the profile page, which allows a user to modify its personal information.
+    :param request: The HTTP request.
+    :return: An HTTP response containing the user profile page.
+    """
+    if request.method == 'GET':
+        return render(request, "aubouleau_web/profile.html")
+    elif request.method == 'POST':
+        # TODO: If there's time, server-side validation
+        email = request.POST.get('email', None)
+        first_name = request.POST.get('first_name', None)
+        last_name = request.POST.get('last_name', None)
+        password = request.POST.get('password', None)
+        password_confirm = request.POST.get('password_confirm', None)
+
+        if password != password_confirm:
+            return render(request, status=400, template_name="400.html")
+
+        # Create the user, log it in and redirect to the dashboard page
+        user = request.user
+        user.email = email
+        user.first_name = first_name
+        user.last_name = last_name
+        user.set_password(password)
+        user.save()
+        return redirect("aubouleau_web:sign_in")
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
 @login_required
 def administration_buildings(request):
     """
