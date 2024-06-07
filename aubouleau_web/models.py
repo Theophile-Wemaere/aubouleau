@@ -419,9 +419,10 @@ class Problem(models.Model):
         self.solver = closed_by
         self.save()
 
-    def get_time_elapsed_since_creation(self):
+    def get_time_elapsed_since_creation(self, short=True):
         """
         Returns a string that indicates the time elapsed since this problem was created.
+        :param short: If True, returns a short version of the string (e.g. "3d" instead of "3 days", etc.)
         :return: A string representing the time elapsed since this problem was created (ex:  "10s", "13d", "1y", etc.)
         """
         delta = timezone.now() - self.created_at
@@ -430,14 +431,24 @@ class Problem(models.Model):
         years = floor(days / 365)
 
         if years >= 1:
-            return f'{years}y'
+            if short:
+                return f'{years}y'
+            return f"{years} year{'s' if years > 1 else ''}"
         if days >= 1:
-            return f'{days}d'
+            if short:
+                return f'{days}d'
+            return f"{days} day{'s' if days > 1 else ''}"
         if hours >= 1:
-            return f'{hours}h'
+            if short:
+                return f'{hours}h'
+            return f"{hours} hour{'s' if hours > 1 else ''}"
         if minutes >= 1:
-            return f'{minutes}m'
-        return f'{seconds}s'
+            if short:
+                return f'{minutes}m'
+            return f"{minutes} minute{'s' if minutes > 1 else ''}"
+        if short:
+            return f'{seconds}s'
+        return f"{seconds} second{'s' if seconds > 1 else ''}"
 
 
 class Comment(models.Model):
