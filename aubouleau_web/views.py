@@ -674,7 +674,7 @@ def problems_new(request):
         if (not room and not equipment) or (room and equipment):
             return render(request, status=400, template_name="400.html")
 
-        Problem.objects.create(status='OPEN', title=title, description=description, reporter=request.user, room=room, created_at=timezone.now())
+        Problem.objects.create(status='OPEN', title=title, description=description, reporter=request.user, room=room, equipment=equipment, created_at=timezone.now())
         return redirect("aubouleau_web:problems")
     else:
         return render(request, status=405, template_name="405.html")
