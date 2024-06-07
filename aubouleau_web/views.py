@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -7,7 +7,7 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, render, redirect
 from django.utils import timezone
-from django.utils.timezone import localtime, make_aware
+from django.utils.timezone import localtime, make_aware, make_naive
 
 from .models import Building, Floor, Room, TimeSlot, Equipment, EquipmentType, Problem, Comment
 
@@ -21,13 +21,24 @@ def index(request):
     buildings = Building.objects.all()
     problems = Problem.objects.filter(status='OPEN').order_by('-created_at')
 
+    # Context for available and unavailable rooms
     available_rooms, unavailable_rooms = 0, 0
     for building in buildings:
         available_rooms += building.count_available_rooms()
         unavailable_rooms += building.count_unavailable_rooms()
 
-    rooms = Room.objects.all()
+    # Context for the room availability graph
+    today_time_slots = []
+    time = timezone.now().replace(hour=TimeSlot.DAY_START.hour, minute=TimeSlot.DAY_START.minute)
+    while time.hour <= TimeSlot.DAY_END.hour:
+        today_time_slots.append((time.strftime("%H:%M"), Room.count_rooms_available_at(time), Room.count_rooms_unavailable_at(time)))
+        time = time + timedelta(hours=1)
 
+    # Context for the room availability percentage
+    room_availability = round(round(Room.count_rooms_available_at(timezone.now()) / Room.objects.all().count(), 2) * 100)
+
+    # Context for rooms soon available and rooms soon unavailable
+    rooms = Room.objects.all()
     # Each tuple contains: the room soon available, its current time slot, the time left until available (in minutes) and the string "Updated [time] agp"
     rooms_soon_available: list[tuple[Room, TimeSlot, int, str]] = []
     for room in rooms:
@@ -56,7 +67,7 @@ def index(request):
     # Sort rooms soon unavailable based on the time left until unavailable (increasing order)
     sorted_rooms_soon_unavailable = sorted(rooms_soon_unavailable, key=lambda x: x[2])
 
-    return render(request, "aubouleau_web/index.html", {"problems": problems , "available_rooms": available_rooms, "unavailable_rooms": unavailable_rooms, "rooms_soon_available": sorted_rooms_soon_available, "rooms_soon_unavailable": sorted_rooms_soon_unavailable})
+    return render(request, "aubouleau_web/index.html", {"room_availability": room_availability, "today_time_slots": today_time_slots, "problems": problems , "available_rooms": available_rooms, "unavailable_rooms": unavailable_rooms, "rooms_soon_available": sorted_rooms_soon_available, "rooms_soon_unavailable": sorted_rooms_soon_unavailable})
 
 
 def sign_in(request):
