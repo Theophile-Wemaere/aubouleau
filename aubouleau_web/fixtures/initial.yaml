@@ -287,7 +287,7 @@
   fields:
     number: "L012"
     name: "Amphithéâtre"
-    seats: 30
+    seats: 75
     picture: "L012.png"
     created_at: "2024-05-13T10:00:00+02:00"
     floor: 8
@@ -455,6 +455,11 @@
   fields:
     name: "Soldering irons"
     created_at: "2024-06-04T18:00:00+02:00"
+- model: aubouleau_web.EquipmentType
+  pk: 4
+  fields:
+    name: "Video projectors"
+    created_at: "2024-06-04T18:00:00+02:00"
 
 # Equipment
 
@@ -523,3 +528,15 @@
     created_at: "2024-06-04T18:00:00+02:00"
     room: 26
     type: 3
+
+# Video projectors
+- model: aubouleau_web.Equipment
+  pk: 7
+  fields:
+    name: "Projecteur 1"
+    manufacturer: "Casio"
+    model: "XJ-V2"
+    picture: "Casio-XJV2.png"
+    created_at: "2024-06-04T18:00:00+02:00"
+    room: 21
+    type: 4
