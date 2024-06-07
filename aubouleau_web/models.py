@@ -89,7 +89,7 @@ class Floor(models.Model):
     building = models.ForeignKey(Building, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f'{self.name} ({self.number})'
+        return f'{self.name} ({self.building}, {self.number})'
 
     def count_rooms(self):
         """
