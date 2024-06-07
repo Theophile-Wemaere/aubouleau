@@ -65,6 +65,12 @@
                 {% else %}
                     <span class="bg-gray-100 text-gray-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">{{ problem.status }}</span>
                 {% endif %}
+                {# Room / Equipment badge #}
+                {% if problem.room %}
+                    <span class="bg-pink-100 text-pink-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-pink-900 dark:text-pink-300">Room: <a href="{% url 'aubouleau_web:room-detail' building_name=problem.room.floor.building.name room_number=problem.room.number %}" class="underline">{{ problem.room.number }}</a></span>
+                {% elif problem.equipment %}
+                    <span class="bg-orange-100 text-orange-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-orange-900 dark:text-orange-300">Equipment: {{ problem.equipment.name }}</span>
+                {% endif %}
                 {# Time elapsed since creation #}
                 <span class="bg-gray-100 text-gray-800 text-sm font-medium inline-flex items-center px-2.5 py-0.5 rounded me-2 dark:bg-gray-700 dark:text-gray-40">
                     <svg class="w-3 h-3 me-1.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
@@ -188,7 +194,7 @@
         <div class="flex flex-col w-[75%]">
             <hr class="h-[2px] my-4 bg-gray-200 border-0 dark:bg-gray-700">
             <div class="flex flex-row items-center">
-                <p class="text-gray-500 italic">This issue has been marked &nbsp</p>
+                <p class="text-gray-500 italic">This problem has been marked &nbsp</p>
                 {% if problem.is_solved %}
                     <span class="bg-purple-100 text-purple-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">{{ problem.status }}</span>
                 {% elif problem.is_closed %}
