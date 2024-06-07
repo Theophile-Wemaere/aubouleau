@@ -77,6 +77,19 @@ class Building(models.Model):
         """
         return Equipment.objects.filter(room__floor__building=self.id)
 
+    def count_open_problems(self):
+        """
+        Counts the amount of problems affecting this :py:class:`Building`.
+        :return: The number of problems affecting this :py:class:`Building`.
+        """
+        floors = Floor.objects.filter(building=self.id)
+        problems_count = 0
+
+        for floor in floors:
+            problems_count += floor.count_open_problems()
+
+        return problems_count
+
 
 class Floor(models.Model):
     """
