@@ -611,7 +611,7 @@ def problems(request):
     :param request: The HTTP request.
     :return: An HTTP response containing a page with all the open problems.
     """
-    open_problems_list = Problem.objects.filter(status='OPEN').order_by('id')
+    open_problems_list = Problem.objects.filter(status='OPEN').order_by('-created_at')
     return render(request, "aubouleau_web/problems.html", {"problems": open_problems_list})
 
 
