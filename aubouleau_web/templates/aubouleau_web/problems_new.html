@@ -65,10 +65,18 @@
         {# Problem description #}
         <label for="description" class="block text-xl font-medium text-gray-900 dark:text-white">Description</label>
         <textarea id="description" name="description" required rows="16" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-green-500 dark:focus:border-green-500" placeholder="Write a comprehensive description of the problem..."></textarea>
+        {# Rooms / Equipment radio buttons #}
+        <div class="flex flex-col gap-y-4">
+            <p class="text-xl font-medium text-gray-900 dark:text-white">What is affected by this problem ?</p>
+            <div class="flex flex-row gap-x-16">
+                <label class="text-sm font-medium text-gray-900 dark:text-white"><input id="radio-room" type="radio" name="affected-by-problem" value="room" required class="me-2">A room</label>
+                <label class="text-sm font-medium text-gray-900 dark:text-white"><input id="radio-equipment" type="radio" name="affected-by-problem" value="equipment" required class="me-2">A piece of equipment</label>
+            </div>
+        </div>
         {# Rooms and Equipment dropdowns #}
         <div class="flex flex-col gap-y-6">
             {# Rooms dropdown #}
-            <div>
+            <div id="rooms-dropdown">
                 <label for="room_id" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Room affected</label>
                 <select id="room_id" name="room_id" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-green-500 dark:focus:border-green-500">
                     <option value="" selected>Select the room affected</option>
@@ -78,7 +86,7 @@
                 </select>
             </div>
             {# Equipment dropdown #}
-            <div>
+            <div id="equipment-dropdown">
                 <label for="equipment_id" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Equipment affected</label>
                 <select id="equipment_id" name="equipment_id" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-green-500 dark:focus:border-green-500">
                     <option value="" selected>Select the equipment affected</option>
@@ -99,4 +107,38 @@
         </div>
     </form>
 </div>
+{% endblock %}
+
+{% block script %}
+<script>
+    const radio_room = document.getElementById('radio-room');
+    const radio_equipment = document.getElementById('radio-equipment');
+
+    const rooms_dropdown = document.getElementById('rooms-dropdown');
+    const equipment_dropdown = document.getElementById('equipment-dropdown');
+
+    const room_id_select = document.getElementById('room_id')
+    const equipment_id_select = document.getElementById('equipment_id')
+
+    radio_room.addEventListener('change', (event) => {
+        let value = event.target.value
+        if (value === 'room') {
+            rooms_dropdown.hidden = false
+            equipment_dropdown.hidden = true
+            equipment_id_select.value = ""
+        }
+    })
+
+    radio_equipment.addEventListener('change', (event) => {
+        let value = event.target.value
+        if (value === 'equipment') {
+            rooms_dropdown.hidden = true
+            equipment_dropdown.hidden = false
+            room_id_select.value = ""
+        }
+    })
+
+    rooms_dropdown.hidden = true
+    equipment_dropdown.hidden = true
+</script>
 {% endblock %}
