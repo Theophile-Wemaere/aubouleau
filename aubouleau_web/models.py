@@ -16,7 +16,7 @@ class Building(models.Model):
     A class representing a physical building of ISEP.
     """
     name = models.CharField(max_length=64, unique=True)
-    picture = models.CharField(max_length=4096, blank=True, default="")
+    picture = models.CharField(max_length=4096, blank=True, default="default.jpg")
     created_at = models.DateTimeField("Creation timestamp")
 
     def __str__(self):
@@ -84,7 +84,7 @@ class Floor(models.Model):
     """
     number = models.IntegerField("Floor number")
     name = models.CharField(max_length=64)
-    picture = models.CharField(max_length=4096, blank=True, default="")
+    picture = models.CharField(max_length=4096, blank=True, default="default.jpg")
     created_at = models.DateTimeField("Creation timestamp")
     building = models.ForeignKey(Building, on_delete=models.CASCADE)
 
@@ -126,7 +126,7 @@ class Room(models.Model):
     number = models.CharField(max_length=8, unique=True)
     name = models.CharField(max_length=64)
     seats = models.IntegerField("Number of seats")
-    picture = models.CharField(max_length=4096, blank=True, default="")
+    picture = models.CharField(max_length=4096, blank=True, default="default.jpg")
     created_at = models.DateTimeField("Creation timestamp")
     floor = models.ForeignKey(Floor, on_delete=models.CASCADE)
 
@@ -348,7 +348,7 @@ class Equipment(models.Model):
     name = models.CharField(max_length=64, verbose_name="Equipment name")
     manufacturer = models.CharField(max_length=64, verbose_name="Equipment manufacturer")
     model = models.CharField(max_length=64, blank=True, verbose_name="Equipment model")
-    picture = models.CharField(max_length=4096, blank=True, default="")
+    picture = models.CharField(max_length=4096, blank=True, default="default.jpg")
     created_at = models.DateTimeField("Creation timestamp")
     room = models.ForeignKey(Room, null=True, on_delete=models.SET_NULL)
     type = models.ForeignKey(EquipmentType, null=True, on_delete=models.SET_NULL)
