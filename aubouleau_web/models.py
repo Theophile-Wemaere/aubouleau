@@ -91,6 +91,12 @@ class Floor(models.Model):
     def __str__(self):
         return f'{self.name} ({self.building}, {self.number})'
 
+    class Meta:
+        # A Building can't have two (or more) floors with the same number
+        # This guarantees that, for instance, the URL aubouleau.fr/NDC/floors/1 will ALWAYS return a single floor
+        # (since the Building NDC can only have one floor with the number 1)
+        unique_together = ("number", "building")
+
     def count_rooms(self):
         """
         Counts the amount of rooms contained in this :py:class:`Floor`.
@@ -112,11 +118,32 @@ class Floor(models.Model):
         """
         return Equipment.objects.filter(room__floor=self.id)
 
-    class Meta:
-        # A Building can't have two (or more) floors with the same number
-        # This guarantees that, for instance, the URL aubouleau.fr/NDC/floors/1 will ALWAYS return a single floor
-        # (since the Building NDC can only have one floor with the number 1)
-        unique_together = ("number", "building")
+    def count_computers(self):
+        """
+        Counts the amount of computers in this :py:class:`Floor`.
+        :return: The number of computers in this :py:class:`Floor`.
+        """
+        rooms = self.get_all_rooms()
+        computers_count = 0
+        for room in rooms:
+            computers_count += room.count_computers()
+        return computers_count
+
+    def count_open_problems(self):
+        """
+        Counts the amount of problems affecting this :py:class:`Floor`.
+        :return: The number of problems affecting this :py:class:`Floor`.
+        """
+        rooms = self.get_all_rooms()
+        equipment_list = self.get_all_equipment()
+        problems_count = 0
+
+        for room in rooms:
+            problems_count += room.count_open_problems()
+        for equipment in equipment_list:
+            problems_count += equipment.count_open_problems()
+
+        return problems_count
 
 
 class Room(models.Model):
@@ -253,6 +280,27 @@ class Room(models.Model):
                 return time_slot
         return None
 
+    def count_computers(self):
+        """
+        Counts the amount of computers in this :py:class:`Room`.
+        :return: The number of computers in this :py:class:`Room`.
+        """
+        return self.equipment_set.filter(type__name='Computer').count()
+
+    def has_video_projector(self):
+        """
+        Indicates if this :py:class:`Room` has a video projector.
+        :return: True if this :py:class:`Room` has a one or more video projector, False otherwise.
+        """
+        return self.equipment_set.filter(type__name='Video projectors').exists()
+
+    def count_open_problems(self):
+        """
+        Counts the amount of open problems affecting this :py:class:`Room`.
+        :return: The number of open problems affecting this :py:class:`Room`.
+        """
+        return Problem.objects.filter(room__id=self.id).filter(status='OPEN').count()
+
 
 class TimeSlot(models.Model):
     """
@@ -362,6 +410,13 @@ class Equipment(models.Model):
         :return: A list of all the problems affecting this piece of equipment.
         """
         return self.problem_set.filter(status='OPEN')
+
+    def count_open_problems(self):
+        """
+        Counts the amount of open problems affecting this piece :py:class:`Equipment`.
+        :return: The number of open problems affecting this piece of :py:class:`Equipment`.
+        """
+        return Problem.objects.filter(equipment__id=self.id).filter(status='OPEN').count()
 
 
 class Problem(models.Model):
