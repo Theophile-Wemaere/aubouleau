@@ -19,6 +19,8 @@ def index(request):
     :return: An HTTP response containing the dashboard page.
     """
     buildings = Building.objects.all()
+    problems = Problem.objects.filter(status='OPEN').order_by('-created_at')
+
     available_rooms, unavailable_rooms = 0, 0
     for building in buildings:
         available_rooms += building.count_available_rooms()
@@ -54,7 +56,7 @@ def index(request):
     # Sort rooms soon unavailable based on the time left until unavailable (increasing order)
     sorted_rooms_soon_unavailable = sorted(rooms_soon_unavailable, key=lambda x: x[2])
 
-    return render(request, "aubouleau_web/index.html", {"available_rooms": available_rooms, "unavailable_rooms": unavailable_rooms, "rooms_soon_available": sorted_rooms_soon_available, "rooms_soon_unavailable": sorted_rooms_soon_unavailable})
+    return render(request, "aubouleau_web/index.html", {"problems": problems , "available_rooms": available_rooms, "unavailable_rooms": unavailable_rooms, "rooms_soon_available": sorted_rooms_soon_available, "rooms_soon_unavailable": sorted_rooms_soon_unavailable})
 
 
 def sign_in(request):

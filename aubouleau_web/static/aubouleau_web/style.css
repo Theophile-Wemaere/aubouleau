@@ -1590,6 +1590,10 @@ input:checked + .toggle-bg {
   max-height: 18rem;
 }
 
+.max-h-20 {
+  max-height: 5rem;
+}
+
 .w-1\/2 {
   width: 50%;
 }
@@ -1667,6 +1671,38 @@ input:checked + .toggle-bg {
   width: 100%;
 }
 
+.w-screen {
+  width: 100vw;
+}
+
+.w-\[15\%\] {
+  width: 15%;
+}
+
+.w-\[15vw\] {
+  width: 15vw;
+}
+
+.w-\[10vw\] {
+  width: 10vw;
+}
+
+.w-\[13vw\] {
+  width: 13vw;
+}
+
+.w-\[87vw\] {
+  width: 87vw;
+}
+
+.w-\[86vw\] {
+  width: 86vw;
+}
+
+.w-\[85vw\] {
+  width: 85vw;
+}
+
 .min-w-72 {
   min-width: 18rem;
 }
@@ -1701,6 +1737,10 @@ input:checked + .toggle-bg {
 
 .max-w-xl {
   max-width: 36rem;
+}
+
+.max-w-full {
+  max-width: 100%;
 }
 
 .flex-1 {
