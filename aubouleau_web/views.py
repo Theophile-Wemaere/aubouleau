@@ -886,6 +886,7 @@ def room_detail(request, building_name, room_number):
     building = Building.objects.get(name=building_name)
     room = Room.objects.get(number=room_number)
     time_slots = room.timeslot_set.all().order_by("start_time")
+    problems = room.problem_set.filter(status='OPEN').order_by("-created_at")
 
     # A list containing tuples made of 2 elements: (TimeSlot object, True if the time slot is marked as available, False otherwise)
     time_slots_list: list[tuple[TimeSlot, bool]] = []
@@ -915,7 +916,7 @@ def room_detail(request, building_name, room_number):
         day_end = make_aware(TimeSlot.DAY_END.replace(year=datetime.now().year, month=datetime.now().month, day=datetime.now().day))
         time_slots_list.append((TimeSlot(subject="Room is available", start_time=previous_time_slot.end_time, end_time=day_end, created_at=timezone.now(), room=previous_time_slot.room), True))
 
-    return render(request, "aubouleau_web/room_detail.html", {"building": building, "room": room, "time_slots": time_slots_list})
+    return render(request, "aubouleau_web/room_detail.html", {"building": building, "room": room, "time_slots": time_slots_list, "problems": problems})
 
 
 def building_equipment(request, building_name):
