@@ -356,6 +356,13 @@ class Equipment(models.Model):
     def __str__(self):
         return f"[{self.room.number if self.room else 'NO ROOM'}] [{self.type.name if self.type else 'NO TYPE'}] {self.name} | {self.manufacturer} {self.model}"
 
+    def get_open_problems(self):
+        """
+        Fetches all the problems (with the "OPEN" status) that affect this piece of :py:class:`Equipment`.
+        :return: A list of all the problems affecting this piece of equipment.
+        """
+        return self.problem_set.filter(status='OPEN')
+
 
 class Problem(models.Model):
     status = models.CharField(max_length=32, verbose_name="Problem status")
