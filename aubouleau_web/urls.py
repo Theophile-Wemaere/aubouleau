@@ -18,6 +18,9 @@ urlpatterns = [
     # /logout
     # Example: https://aubouleau.fr/logout
     path("logout/", views.sign_out, name="sign_out"),
+    # /profile
+    # Example: https://aubouleau.fr/profile
+    path("profile/", views.profile, name="profile"),
 
     # /administration/buildings
     # Example: https://aubouleau.fr/administration/buildings
