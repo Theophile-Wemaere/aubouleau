@@ -160,6 +160,26 @@ class Room(models.Model):
     def __str__(self):
         return f'{self.number} ({self.name})'
 
+    @staticmethod
+    def count_rooms_available_at(time: datetime):
+        rooms = Room.objects.all()
+        available_rooms = 0
+        for room in rooms:
+            if room.is_available_at(time):
+                available_rooms += 1
+
+        return available_rooms
+
+    @staticmethod
+    def count_rooms_unavailable_at(time: datetime):
+        rooms = Room.objects.all()
+        unavailable_rooms = 0
+        for room in rooms:
+            if not room.is_available_at(time):
+                unavailable_rooms += 1
+
+        return unavailable_rooms
+
     def is_available(self) -> bool:
         """
         Indicates if this room is available right now.

@@ -2290,6 +2290,10 @@ input:checked + .toggle-bg {
   background-color: transparent;
 }
 
+.fill-gray-500 {
+  fill: #6B7280;
+}
+
 .object-cover {
   -o-object-fit: cover;
      object-fit: cover;
@@ -3069,6 +3073,10 @@ input:checked + .toggle-bg {
 .dark\:bg-orange-900:is(.dark *) {
   --tw-bg-opacity: 1;
   background-color: rgb(119 29 29 / var(--tw-bg-opacity));
+}
+
+.dark\:fill-gray-400:is(.dark *) {
+  fill: #9CA3AF;
 }
 
 .dark\:text-blue-300:is(.dark *) {

@@ -2,8 +2,7 @@
 {% load static %}
 
 {% block scripts %}
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts" defer></script>
-    <script src="{% static 'aubouleau_web/js/dashboard.js' %}" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 {% endblock %}
 {% block title %}Aubouleau | Dashboard{% endblock %}
 
@@ -39,8 +38,8 @@
             <p class="text-4xl xl:text-5xl font-bold text-center text-gray-700 dark:text-gray-400">{{ problems|length }}</p>
         </a>
         <a href="#" class="flex flex-col flex-grow max-w-sm px-2 py-6 xl:p-6 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
-            <h5 class="mb-2 text-xl xl:text-2xl font-bold text-center tracking-tight text-gray-900 dark:text-white">Global score</h5>
-            <p class="text-4xl xl:text-5xl font-bold text-center text-gray-700 dark:text-gray-400">99%</p>
+            <h5 class="mb-2 text-xl xl:text-2xl font-bold text-center tracking-tight text-gray-900 dark:text-white">Room availability</h5>
+            <p class="text-4xl xl:text-5xl font-bold text-center text-gray-700 dark:text-gray-400">{{ room_availability }}%</p>
         </a>
     </div>
     {# Second row #}
@@ -49,41 +48,12 @@
         <div class="w-[50%] border border-gray-300 bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-6">
             <div class="flex justify-between">
                 <div>
-                    <h5 class="leading-none text-3xl font-bold text-gray-900 dark:text-white pb-2">Global score</h5>
-                    <p class="text-base font-normal text-gray-500 dark:text-gray-400">Evolution this week</p>
-                </div>
-                <div class="flex items-center px-2.5 py-0.5 text-base font-semibold text-blue-700 dark:text-blue-700 text-center">
-                    6%
-                    <svg class="w-3 h-3 ms-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
-                         viewBox="0 0 10 14">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13V1m0 0L1 5m4-4 4 4"></path>
-                    </svg>
+                    <h5 class="leading-none text-3xl font-bold text-gray-900 dark:text-white pb-2">Room availability</h5>
+                    <p class="text-base font-normal text-gray-500 dark:text-gray-400">Evolution today</p>
                 </div>
             </div>
-            <div id="area-chart"></div>
-            <div class="grid grid-cols-1 items-center border-gray-200 border-t dark:border-gray-700 justify-between">
-                <div class="flex justify-between items-center pt-5">
-                    {# Button #}
-                    <button id="dropdownDefaultButton" data-dropdown-toggle="lastDaysdropdown" data-dropdown-placement="bottom" class="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-900 text-center inline-flex items-center dark:hover:text-white" type="button">
-                        Last 7 days
-                        <svg class="w-2.5 m-2.5 ms-1.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                             fill="none" viewBox="0 0 10 6">
-                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"></path>
-                        </svg>
-                    </button>
-                    {# Dropdown menu #}
-                    <div id="lastDaysdropdown" class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700">
-                        <ul class="py-2 text-sm text-gray-700 dark:text-gray-200"
-                            aria-labelledby="dropdownDefaultButton">
-                            <li><a href="#" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Yesterday</a></li>
-                            <li><a href="#" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Today</a></li>
-                            <li><a href="#" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Last 7 days</a></li>
-                            <li><a href="#" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Last 30 days</a></li>
-                            <li><a href="#" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Last 90 days</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
+            <div id="column-chart"></div>
+            <div class="grid grid-cols-1 items-center border-gray-200 border-t dark:border-gray-700 justify-between"></div>
         </div>
         {# Newest problems #}
         <div class="flex flex-col flex-grow border border-gray-300 rounded-lg shadow px-4 py-3 max-w-[50%]">
@@ -193,4 +163,110 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block script %}
+<script>
+    const options = {
+        colors: ["#0E9F6E", "#E02424"],
+        series: [
+            {
+                name: "Available",
+                color: "#0E9F6E",
+                data: [
+                    {% for time_slot in today_time_slots %}
+                    {x: "{{ time_slot.0 }}", y: {{ time_slot.1 }}},
+                    {% endfor %}
+                ],
+            },
+            {
+                name: "Occupied",
+                color: "#E02424",
+                data: [
+                    {% for time_slot in today_time_slots %}
+                    {x: "{{ time_slot.0 }}", y: {{ time_slot.2 }}},
+                    {% endfor %}
+                ],
+            },
+        ],
+        chart: {
+            type: "bar",
+            height: "320px",
+            fontFamily: "Inter, sans-serif",
+            toolbar: {
+                show: false,
+            },
+        },
+        plotOptions: {
+            bar: {
+                horizontal: false,
+                columnWidth: "70%",
+                borderRadiusApplication: "end",
+                borderRadius: 8,
+            },
+        },
+        tooltip: {
+            shared: true,
+            intersect: false,
+            style: {
+                fontFamily: "Inter, sans-serif",
+            },
+        },
+        states: {
+            hover: {
+                filter: {
+                    type: "darken",
+                    value: 1,
+                },
+            },
+        },
+        stroke: {
+            show: true,
+            width: 0,
+            colors: ["transparent"],
+        },
+        grid: {
+            show: false,
+            strokeDashArray: 4,
+            padding: {
+                left: 2,
+                right: 2,
+                top: -14
+            },
+        },
+        dataLabels: {
+            enabled: false,
+        },
+        legend: {
+            show: false,
+        },
+        xaxis: {
+            floating: false,
+            labels: {
+                show: true,
+                style: {
+                    fontFamily: "Inter, sans-serif",
+                    cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
+                }
+            },
+            axisBorder: {
+                show: false,
+            },
+            axisTicks: {
+                show: false,
+            },
+        },
+        yaxis: {
+            show: false,
+        },
+        fill: {
+            opacity: 1,
+        },
+    }
+
+    if (document.getElementById("column-chart") && typeof ApexCharts !== 'undefined') {
+        const chart = new ApexCharts(document.getElementById("column-chart"), options);
+        chart.render();
+    }
+</script>
 {% endblock %}
