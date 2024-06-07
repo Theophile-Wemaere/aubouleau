@@ -2290,6 +2290,11 @@ input:checked + .toggle-bg {
   background-color: transparent;
 }
 
+.bg-green-500 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(14 159 110 / var(--tw-bg-opacity));
+}
+
 .fill-gray-500 {
   fill: #6B7280;
 }
@@ -2881,9 +2886,21 @@ input:checked + .toggle-bg {
   border-color: rgb(14 159 110 / var(--tw-border-opacity));
 }
 
+.focus\:border-transparent:focus {
+  border-color: transparent;
+}
+
 .focus\:outline-none:focus {
   outline: 2px solid transparent;
   outline-offset: 2px;
+}
+
+.focus\:outline-green-500:focus {
+  outline-color: #0E9F6E;
+}
+
+.focus\:outline-transparent:focus {
+  outline-color: transparent;
 }
 
 .focus\:ring-0:focus {
@@ -2952,6 +2969,16 @@ input:checked + .toggle-bg {
 .focus\:ring-yellow-200:focus {
   --tw-ring-opacity: 1;
   --tw-ring-color: rgb(252 233 106 / var(--tw-ring-opacity));
+}
+
+.focus\:ring-green-100:focus {
+  --tw-ring-opacity: 1;
+  --tw-ring-color: rgb(222 247 236 / var(--tw-ring-opacity));
+}
+
+.focus\:ring-green-400:focus {
+  --tw-ring-opacity: 1;
+  --tw-ring-color: rgb(49 196 141 / var(--tw-ring-opacity));
 }
 
 .dark\:divide-gray-600:is(.dark *) > :not([hidden]) ~ :not([hidden]) {

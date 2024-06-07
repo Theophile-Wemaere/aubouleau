@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from itertools import chain
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -161,6 +162,57 @@ def profile(request):
         user.set_password(password)
         user.save()
         return redirect("aubouleau_web:sign_in")
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+def search(request):
+    """
+    Fetches objects matching the query_string in the database and displays them on a single page.
+    :param request: The HTTP request.
+    :return: A page featuring all the objects matching the provided query_string.
+    """
+    if request.method == 'POST':
+        query_string = request.POST.get('search_query', '')
+        matching_buildings = Building.objects.filter(name__icontains=query_string)
+        matching_floors = Floor.objects.filter(name__icontains=query_string)
+        matching_rooms = Room.objects.filter(Q(number__icontains=query_string) | Q(name__icontains=query_string))
+        matching_equipment = Equipment.objects.filter(Q(name__icontains=query_string) | Q(manufacturer__icontains=query_string) | Q(model__icontains=query_string))
+        matching_problems = Problem.objects.filter(
+            Q(title__icontains=query_string) |
+            Q(description__icontains=query_string) |
+            Q(room__number__icontains=query_string) |
+            Q(room__name__icontains=query_string) |
+            Q(equipment__name__icontains=query_string) |
+            Q(equipment__manufacturer__icontains=query_string) |
+            Q(equipment__model__icontains=query_string)
+        )
+        search_category = request.POST.get('search_category', '')
+
+        if search_category == '':
+            context = {
+                "buildings": matching_buildings,
+                "floors": matching_floors,
+                "rooms": matching_rooms,
+                "equipment": matching_equipment,
+                "problems": matching_problems,
+                "query_string": query_string,
+                "results": True if matching_buildings or matching_floors or matching_rooms or matching_equipment or matching_equipment else False,
+            }
+        elif search_category == 'buildings':
+            context = {"buildings": matching_buildings, "query_string": query_string, "results": True if matching_buildings else False}
+        elif search_category == 'floors':
+            context = {"floors": matching_floors, "query_string": query_string, "results": True if matching_floors else False}
+        elif search_category == 'rooms':
+            context = {"rooms": matching_rooms, "query_string": query_string, "results": True if matching_rooms else False}
+        elif search_category == 'equipment':
+            context = {"equipment": matching_equipment, "query_string": query_string, "results": True if matching_equipment else False}
+        elif search_category == 'problems':
+            context = {"problems": matching_problems, "query_string": query_string, "results": True if matching_problems else False}
+        else:
+            context = {"query_string": query_string, "results": False}
+
+        return render(request, "aubouleau_web/search.html", context)
     else:
         return render(request, status=405, template_name="405.html")
 
