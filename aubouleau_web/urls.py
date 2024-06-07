@@ -22,6 +22,10 @@ urlpatterns = [
     # Example: https://aubouleau.fr/profile
     path("profile/", views.profile, name="profile"),
 
+    # /search
+    # Example: https://aubouleau.fr/search
+    path("search/", views.search, name="search"),
+
     # /administration/buildings
     # Example: https://aubouleau.fr/administration/buildings
     path("administration/buildings/", views.administration_buildings, name="administration_buildings"),
