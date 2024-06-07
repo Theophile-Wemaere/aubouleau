@@ -605,6 +605,19 @@ def administration_equipment_types_delete(request, equipment_type_name):
         return render(request, status=405, template_name="405.html")
 
 
+def equipment(request, equipment_type_name):
+    """
+    Displays the list of all the :py:class:`Equipment` of the specified :py:class:`EquipmentType`.
+    :param request: The HTTP request.
+    :param equipment_type_name: The name of the :py:class:`EquipmentType` to display the equipment of.
+    :return: An HTTP response containing a page with all the relevant equipment.
+    """
+    equipment_type = EquipmentType.objects.get(name=equipment_type_name)
+    equipment_list = equipment_type.equipment_set.all().order_by('room')
+
+    return render(request, "aubouleau_web/equipment.html", {"equipment_type": equipment_type, "equipment_list": equipment_list})
+
+
 def problems(request):
     """
     Displays the list of all the :py:class:`Problem` with the "OPEN" status.

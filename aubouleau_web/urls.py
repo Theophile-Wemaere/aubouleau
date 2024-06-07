@@ -84,6 +84,10 @@ urlpatterns = [
     # Example: https://aubouleau.fr/administration/equipment_types/delete/Computers
     path("administration/equipment_types/delete/<str:equipment_type_name>/", views.administration_equipment_types_delete, name="administration_equipment_types_delete"),
 
+    # /equipment/[equipment_type]
+    # Example: https://aubouleau.fr/equipment/computers
+    path("equipment/<str:equipment_type_name>/", views.equipment, name="equipment"),
+
     # /problems
     # Example: https://aubouleau.fr/problems
     path("problems/", views.problems, name="problems"),
