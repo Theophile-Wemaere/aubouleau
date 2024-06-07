@@ -206,7 +206,7 @@ def search(request):
         elif search_category == 'rooms':
             context = {"rooms": matching_rooms, "query_string": query_string, "results": True if matching_rooms else False}
         elif search_category == 'equipment':
-            context = {"equipment": matching_equipment, "query_string": query_string, "results": True if matching_equipment else False}
+            context = {"equipment_list": matching_equipment, "query_string": query_string, "results": True if matching_equipment else False}
         elif search_category == 'problems':
             context = {"problems": matching_problems, "query_string": query_string, "results": True if matching_problems else False}
         else:
