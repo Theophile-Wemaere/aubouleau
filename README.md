@@ -11,7 +11,10 @@ To start developing on this project, start by cloning this repository.
 
 ### Setting up the local development database
 
-`TODO`
+To start developing using a local database, perform the following operations:
+- [Install MariaDB](https://mariadb.org/download/?t=repo-config)
+- Create a new database named `aubouleau`
+- Create a new user with all privileges on the `aubouleau` database
 
 ### Setting up environment variables
 
@@ -20,7 +23,8 @@ In order to start developing on the project, create a `.env` file at the root of
 ```properties
 # Set to 0 to disable Debug mode (the Django webserver will NOT serve static files !)
 DEBUG=1
-# Generate your own [SECRET_KEY](https://docs.djangoproject.com/en/5.0/ref/settings/#std-setting-SECRET_KEY) and do not share it !
+# Generate your own SECRET_KEY and do not share it !
+# (See: https://docs.djangoproject.com/en/5.0/ref/settings/#std-setting-SECRET_KEY)
 SECRET_KEY=[a secure string]
 DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
 CSRF_TRUSTED_ORIGINS=http://localhost http://127.0.0.1
@@ -58,22 +62,31 @@ As of now, the application can be deployed as a `Docker Compose` stack. The prov
 - A `phpmyadmin` container, which is a web interface for `MariaDB`
 - An `NGINX` container, which proxies requests to `gunicorn` as well as serving static content.
 
+If you haven't done it already, [install Docker](https://docs.docker.com/engine/install/). Refer to the linked documentation for the installation instructions specific to your distribution.
+
 To create the `Docker Compose` stack, simply run the following command in a terminal:
 ```shell
-sudo docker compose up -d
+sudo docker compose up -d --build
 ```
 
 The following ports will be exposed on the host machine :
 
 - `8888`: `NGINX`. To access the application, open http://localhost:8888 in your browser.
-- `5080`: `phpmyadmin`. To access the `phpmyadmin` web interface, open http://localhost:5080 in your browser.
+- `5080`: `phpmyadmin`. To access the `phpmyadmin` web interface, open http://localhost:5080 in your browser. You will be able to log in using the user account declared in `docker-compose.yml`.
 
 To completely delete the stack and remove all created containers, run the following command in a terminal:
 ```shell
-sudo docker compose down -v --remove-orphans
+sudo docker compose down
 ```
 
-**Note that, this command will also remove all the docker volumes associated with the stack. That means that all the data stored in `MariaDB` will be lost.**
+**NB: In order to preserve the data when redeploying the application later, make sure to set the `INITIAL_DEPLOY` parameter to `false` in the `docker-compose.yml` file !**
+
+### Uninstallation
+
+If you want to undeploy the application as well as deleting all its data, run the following command:
+```shell
+sudo docker compose down -v --remove-orphans
+```
 
 If you wish to remove the images pulled and created by `Aubouleau`, run the following command in a terminal:
 ```shell

@@ -1,7 +1,10 @@
 import shutil
 from datetime import date, datetime, timedelta
+from math import floor
 
+from django.contrib.auth.models import User
 from django.db import models
+from django.db.models import Q
 from django.utils import timezone
 from django.utils.timezone import localtime, make_aware, is_naive
 
@@ -13,7 +16,7 @@ class Building(models.Model):
     A class representing a physical building of ISEP.
     """
     name = models.CharField(max_length=64, unique=True)
-    picture = models.CharField(max_length=4096, blank=True, default="")
+    picture = models.CharField(max_length=4096, blank=True, default="default.jpg")
     created_at = models.DateTimeField("Creation timestamp")
 
     def __str__(self):
@@ -74,6 +77,19 @@ class Building(models.Model):
         """
         return Equipment.objects.filter(room__floor__building=self.id)
 
+    def count_open_problems(self):
+        """
+        Counts the amount of problems affecting this :py:class:`Building`.
+        :return: The number of problems affecting this :py:class:`Building`.
+        """
+        floors = Floor.objects.filter(building=self.id)
+        problems_count = 0
+
+        for floor in floors:
+            problems_count += floor.count_open_problems()
+
+        return problems_count
+
 
 class Floor(models.Model):
     """
@@ -81,12 +97,18 @@ class Floor(models.Model):
     """
     number = models.IntegerField("Floor number")
     name = models.CharField(max_length=64)
-    picture = models.CharField(max_length=4096, blank=True, default="")
+    picture = models.CharField(max_length=4096, blank=True, default="default.jpg")
     created_at = models.DateTimeField("Creation timestamp")
     building = models.ForeignKey(Building, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f'{self.name} ({self.number})'
+        return f'{self.name} ({self.building}, {self.number})'
+
+    class Meta:
+        # A Building can't have two (or more) floors with the same number
+        # This guarantees that, for instance, the URL aubouleau.fr/NDC/floors/1 will ALWAYS return a single floor
+        # (since the Building NDC can only have one floor with the number 1)
+        unique_together = ("number", "building")
 
     def count_rooms(self):
         """
@@ -109,11 +131,32 @@ class Floor(models.Model):
         """
         return Equipment.objects.filter(room__floor=self.id)
 
-    class Meta:
-        # A Building can't have two (or more) floors with the same number
-        # This guarantees that, for instance, the URL aubouleau.fr/NDC/floors/1 will ALWAYS return a single floor
-        # (since the Building NDC can only have one floor with the number 1)
-        unique_together = ("number", "building")
+    def count_computers(self):
+        """
+        Counts the amount of computers in this :py:class:`Floor`.
+        :return: The number of computers in this :py:class:`Floor`.
+        """
+        rooms = self.get_all_rooms()
+        computers_count = 0
+        for room in rooms:
+            computers_count += room.count_computers()
+        return computers_count
+
+    def count_open_problems(self):
+        """
+        Counts the amount of problems affecting this :py:class:`Floor`.
+        :return: The number of problems affecting this :py:class:`Floor`.
+        """
+        rooms = self.get_all_rooms()
+        equipment_list = self.get_all_equipment()
+        problems_count = 0
+
+        for room in rooms:
+            problems_count += room.count_open_problems()
+        for equipment in equipment_list:
+            problems_count += equipment.count_open_problems()
+
+        return problems_count
 
 
 class Room(models.Model):
@@ -123,12 +166,32 @@ class Room(models.Model):
     number = models.CharField(max_length=8, unique=True)
     name = models.CharField(max_length=64)
     seats = models.IntegerField("Number of seats")
-    picture = models.CharField(max_length=4096, blank=True, default="")
+    picture = models.CharField(max_length=4096, blank=True, default="default.jpg")
     created_at = models.DateTimeField("Creation timestamp")
     floor = models.ForeignKey(Floor, on_delete=models.CASCADE)
 
     def __str__(self):
         return f'{self.number} ({self.name})'
+
+    @staticmethod
+    def count_rooms_available_at(time: datetime):
+        rooms = Room.objects.all()
+        available_rooms = 0
+        for room in rooms:
+            if room.is_available_at(time):
+                available_rooms += 1
+
+        return available_rooms
+
+    @staticmethod
+    def count_rooms_unavailable_at(time: datetime):
+        rooms = Room.objects.all()
+        unavailable_rooms = 0
+        for room in rooms:
+            if not room.is_available_at(time):
+                unavailable_rooms += 1
+
+        return unavailable_rooms
 
     def is_available(self) -> bool:
         """
@@ -250,6 +313,27 @@ class Room(models.Model):
                 return time_slot
         return None
 
+    def count_computers(self):
+        """
+        Counts the amount of computers in this :py:class:`Room`.
+        :return: The number of computers in this :py:class:`Room`.
+        """
+        return self.equipment_set.filter(type__name='Computer').count()
+
+    def has_video_projector(self):
+        """
+        Indicates if this :py:class:`Room` has a video projector.
+        :return: True if this :py:class:`Room` has a one or more video projector, False otherwise.
+        """
+        return self.equipment_set.filter(type__name='Video projectors').exists()
+
+    def count_open_problems(self):
+        """
+        Counts the amount of open problems affecting this :py:class:`Room`.
+        :return: The number of open problems affecting this :py:class:`Room`.
+        """
+        return Problem.objects.filter(room__id=self.id).filter(status='OPEN').count()
+
 
 class TimeSlot(models.Model):
     """
@@ -284,6 +368,7 @@ class TimeSlot(models.Model):
         # Delete all time slots to ensure there are no duplicates
         TimeSlot.objects.all().delete()
 
+        all_time_slots_created = True
         for room_number in room_numbers:
             print(f'Creating time slots for room {room_number}...', end="", flush=True)
 
@@ -293,14 +378,23 @@ class TimeSlot(models.Model):
             except Room.DoesNotExist:
                 continue
 
-            events = get_events_of_day(room_number, date.today())
-            for event in events:
-                # Extract the three values from the tuple
-                # All naive datetime objects are converted to aware datetime objects
-                start_datetime, end_datetime, subject = make_aware(event[0]) if is_naive(event[0]) else event[0], make_aware(event[1]) if is_naive(event[1]) else event[1], event[2]
-                room.timeslot_set.create(subject=subject, start_time=start_datetime, end_time=end_datetime, created_at=timezone.now())
-            print("\t[OK]")
-        print("All time slots have been successfully created.")
+            try:
+                events = get_events_of_day(room_number, date.today())
+            except Exception:
+                all_time_slots_created = False
+                print("\t[FAILED]")
+            else:
+                for event in events:
+                    # Extract the three values from the tuple
+                    # All naive datetime objects are converted to aware datetime objects
+                    start_datetime, end_datetime, subject = make_aware(event[0]) if is_naive(event[0]) else event[0], make_aware(event[1]) if is_naive(event[1]) else event[1], event[2]
+                    room.timeslot_set.create(subject=subject, start_time=start_datetime, end_time=end_datetime, created_at=timezone.now())
+                print("\t[OK]")
+
+        if all_time_slots_created:
+            print("All time slots have been successfully created.")
+        else:
+            print("[WARN] Some time slots could not be created (some room calendars may be missing).")
 
     def is_active_now(self) -> bool:
         """
@@ -320,7 +414,7 @@ class EquipmentType(models.Model):
     """
     A class representing a generic type of :py:class:`Equipment`.
     """
-    name = models.CharField(max_length=64, verbose_name="Equipment type name")
+    name = models.CharField(max_length=64, unique=True, verbose_name="Equipment type name")
     picture = models.CharField(max_length=4096, blank=True, default="")
     created_at = models.DateTimeField("Creation timestamp")
 
@@ -335,10 +429,144 @@ class Equipment(models.Model):
     name = models.CharField(max_length=64, verbose_name="Equipment name")
     manufacturer = models.CharField(max_length=64, verbose_name="Equipment manufacturer")
     model = models.CharField(max_length=64, blank=True, verbose_name="Equipment model")
-    picture = models.CharField(max_length=4096, blank=True, default="")
+    picture = models.CharField(max_length=4096, blank=True, default="default.jpg")
     created_at = models.DateTimeField("Creation timestamp")
     room = models.ForeignKey(Room, null=True, on_delete=models.SET_NULL)
     type = models.ForeignKey(EquipmentType, null=True, on_delete=models.SET_NULL)
 
     def __str__(self):
-        return f'[{self.room.number}] [{self.type.name}] {self.name} | {self.manufacturer} {self.model}'
+        return f"[{self.room.number if self.room else 'NO ROOM'}] [{self.type.name if self.type else 'NO TYPE'}] {self.name} | {self.manufacturer} {self.model}"
+
+    def get_open_problems(self):
+        """
+        Fetches all the problems (with the "OPEN" status) that affect this piece of :py:class:`Equipment`.
+        :return: A list of all the problems affecting this piece of equipment.
+        """
+        return self.problem_set.filter(status='OPEN')
+
+    def count_open_problems(self):
+        """
+        Counts the amount of open problems affecting this piece :py:class:`Equipment`.
+        :return: The number of open problems affecting this piece of :py:class:`Equipment`.
+        """
+        return Problem.objects.filter(equipment__id=self.id).filter(status='OPEN').count()
+
+
+class Problem(models.Model):
+    status = models.CharField(max_length=32, verbose_name="Problem status")
+    title = models.CharField(max_length=64, verbose_name="Problem title")
+    description = models.TextField(verbose_name="Problem description")
+    created_at = models.DateTimeField("Creation timestamp")
+    room = models.ForeignKey(Room, null=True, blank=True, on_delete=models.SET_NULL)
+    equipment = models.ForeignKey(Equipment, null=True, blank=True, on_delete=models.SET_NULL)
+    reporter = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='reported_problems')
+    solver = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='solved_problems')
+
+    def __str__(self):
+        return f'#{self.id} {self.title} [{self.room.number if self.room else self.equipment.name}]'
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=Q(room__isnull=False) | Q(equipment__isnull=False),
+                name='not_both_null'
+            ),
+            models.CheckConstraint(
+                check=(Q(room__isnull=True) & Q(equipment__isnull=False)) | (Q(room__isnull=False) & Q(equipment__isnull=True)),
+                name='not_both_not_null'
+            ),
+        ]
+
+    def is_open(self):
+        """
+        Indicates if this problem is open.
+        :return: True if this problem's status is "OPEN", False otherwise.
+        """
+        return self.status == 'OPEN'
+
+    def is_solved(self):
+        """
+        Indicates if this problem is solved.
+        :return: True if this problem's status is "SOLVED", False otherwise.
+        """
+        return self.status == 'SOLVED'
+
+    def mark_solved(self, solved_by: User):
+        """
+        Marks this problem as "SOLVED" and saves the user who solved it.
+        """
+        self.status = 'SOLVED'
+        self.solver = solved_by
+        self.save()
+
+    def is_closed(self):
+        """
+        Indicates if this problem is closed.
+        :return: True if this problem's status is "CLOSED", False otherwise.
+        """
+        return self.status == 'CLOSED'
+
+    def mark_closed(self, closed_by: User):
+        """
+        Marks this problem as "CLOSED" and saves the user who closed it.
+        """
+        self.status = 'CLOSED'
+        self.solver = closed_by
+        self.save()
+
+    def get_time_elapsed_since_creation(self, short=True):
+        """
+        Returns a string that indicates the time elapsed since this problem was created.
+        :param short: If True, returns a short version of the string (e.g. "3d" instead of "3 days", etc.)
+        :return: A string representing the time elapsed since this problem was created (ex:  "10s", "13d", "1y", etc.)
+        """
+        delta = timezone.now() - self.created_at
+        seconds, minutes, hours, days, years = delta.seconds, floor(delta.seconds / 60), floor(delta.seconds / 3600), delta.days, floor(delta.days / 365)
+
+        if years >= 1:
+            if short:
+                return f'{years}y'
+            return f"{years} year{'s' if years > 1 else ''}"
+        if days >= 1:
+            if short:
+                return f'{days}d'
+            return f"{days} day{'s' if days > 1 else ''}"
+        if hours >= 1:
+            if short:
+                return f'{hours}h'
+            return f"{hours} hour{'s' if hours > 1 else ''}"
+        if minutes >= 1:
+            if short:
+                return f'{minutes}m'
+            return f"{minutes} minute{'s' if minutes > 1 else ''}"
+        if short:
+            return f'{seconds}s'
+        return f"{seconds} second{'s' if seconds > 1 else ''}"
+
+
+class Comment(models.Model):
+    text = models.TextField(verbose_name="Text content")
+    created_at = models.DateTimeField("Creation timestamp")
+    problem = models.ForeignKey(Problem, on_delete=models.CASCADE)
+    author = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
+
+    def __str__(self):
+        return f"Comment on #{self.problem.id} by {self.author.username if self.author else '[DELETED USER]'}: {self.text[:32]}"
+
+    def get_time_elapsed_since_creation(self):
+        """
+        Returns a string that indicates the time elapsed since this comment was created.
+        :return: A string representing the time elapsed since this comment was created (ex:  "10 seconds", "13 days", "1 year", etc.)
+        """
+        delta = timezone.now() - self.created_at
+        seconds, minutes, hours, days, years = delta.seconds, floor(delta.seconds / 60), floor(delta.seconds / 3600), delta.days, floor(delta.days / 365)
+
+        if years >= 1:
+            return f"{years} year{'s' if years > 1 else ''}"
+        if days >= 1:
+            return f"{days} day{'s' if days > 1 else ''}"
+        if hours >= 1:
+            return f"{hours} hour{'s' if hours > 1 else ''}"
+        if minutes >= 1:
+            return f"{minutes} minute{'s' if minutes > 1 else ''}"
+        return f"{seconds} second{'s' if seconds > 1 else ''}"

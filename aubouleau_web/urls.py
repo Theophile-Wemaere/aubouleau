@@ -1,3 +1,4 @@
+from django.contrib.auth.models import Group, User
 from django.urls import path
 
 from . import views
@@ -18,6 +19,13 @@ urlpatterns = [
     # /logout
     # Example: https://aubouleau.fr/logout
     path("logout/", views.sign_out, name="sign_out"),
+    # /profile
+    # Example: https://aubouleau.fr/profile
+    path("profile/", views.profile, name="profile"),
+
+    # /search
+    # Example: https://aubouleau.fr/search
+    path("search/", views.search, name="search"),
 
     # /administration/buildings
     # Example: https://aubouleau.fr/administration/buildings
@@ -71,6 +79,52 @@ urlpatterns = [
     # Example: https://aubouleau.fr/administration/equipment/delete/1
     path("administration/equipment/delete/<int:equipment_id>/", views.administration_equipment_delete, name="administration_equipment_delete"),
 
+    # /administration/equipment_types
+    # Example: https://aubouleau.fr/administration/equipment_types
+    path("administration/equipment_types/", views.administration_equipment_types, name="administration_equipment_types"),
+    # /administration/equipment_types/new
+    # Example: https://aubouleau.fr/administration/equipment_types/new
+    path("administration/equipment_types/new", views.administration_equipment_types_new, name="administration_equipment_types_new"),
+    # /administration/equipment_types/edit/[equipment_type_name]
+    # Example: https://aubouleau.fr/administration/equipment_types/edit/Computers
+    path("administration/equipment/edit/<str:equipment_type_name>/", views.administration_equipment_types_edit, name="administration_equipment_types_edit"),
+    # /administration/equipment_types/delete/[equipment_type_name]
+    # Example: https://aubouleau.fr/administration/equipment_types/delete/Computers
+    path("administration/equipment_types/delete/<str:equipment_type_name>/", views.administration_equipment_types_delete, name="administration_equipment_types_delete"),
+
+    # /equipment/[equipment_type]
+    # Example: https://aubouleau.fr/equipment/computers
+    path("equipment/<str:equipment_type_name>/", views.equipment, name="equipment"),
+
+    # /problems
+    # Example: https://aubouleau.fr/problems
+    path("problems/", views.problems, name="problems"),
+    # /problems/closed
+    # Example: https://aubouleau.fr/problems/closed
+    path("problems/closed/", views.problems_closed, name="problems_closed"),
+    # /problems/[problem_id]
+    # Example: https://aubouleau.fr/problems/0
+    path("problems/<int:problem_id>/", views.problem_detail, name="problem_detail"),
+    # /problems/new
+    # Example: https://aubouleau.fr/problems/new
+    path("problems/new/", views.problems_new, name="problems_new"),
+    # /problems/solve/[problem_id]
+    # Example: https://aubouleau.fr/solve/delete/0
+    path("problems/solve/<int:problem_id>/", views.problems_solve, name="problems_solve"),
+    # /problems/close/[problem_id]
+    # Example: https://aubouleau.fr/close/delete/0
+    path("problems/close/<int:problem_id>/", views.problems_close, name="problems_close"),
+    # /problems/delete/[problem_id]
+    # Example: https://aubouleau.fr/problems/delete/0
+    path("problems/delete/<int:problem_id>/", views.problems_delete, name="problems_delete"),
+    # /problems/[problem_id]/comment/add
+    # Example: https://aubouleau.fr/problems/0/comment/add
+    path("problems/<int:problem_id>/comment/add/", views.problems_comment_add, name="problem_comment_add"),
+    # /problems/[problem_id]/comment/delete/[comment_id]
+    # Example: https://aubouleau.fr/problems/0/comment/delete/0
+    path("problems/<int:problem_id>/comment/delete/<int:comment_id>/", views.problems_comment_delete, name="problem_comment_delete"),
+
+
     # /buildings
     # Example: https://aubouleau.fr/buildings
     path("buildings/", views.buildings, name="buildings"),
@@ -88,7 +142,7 @@ urlpatterns = [
     path("<str:building_name>/floors/<int:floor_number>/rooms/", views.floor_rooms, name="floor_rooms"),
     # /[building_name]/floors/[floor_number]/equipment
     # Example: https://aubouleau.fr/NDL/floors/1/equipment
-path("<str:building_name>/floors/<int:floor_number>/equipment/", views.floor_equipment, name="floor_equipment"),
+    path("<str:building_name>/floors/<int:floor_number>/equipment/", views.floor_equipment, name="floor_equipment"),
     # /[building_name]/rooms
     # Example: https://aubouleau.fr/NDL/rooms
     path("<str:building_name>/rooms/", views.building_rooms, name="building_rooms"),

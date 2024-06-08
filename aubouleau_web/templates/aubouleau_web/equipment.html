@@ -1,7 +1,7 @@
 {% extends "aubouleau_web/base.html" %}
 {% load static %}
 
-{% block title %}Aubouleau | {{ building.name }} | Equipment{% endblock %}
+{% block title %}Aubouleau | Equipment | {{ equipment_type.name }}{% endblock %}
 
 {% block breadcrumb %}
 <nav class="flex px-5 py-3 text-gray-700 border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700" aria-label="Breadcrumb">
@@ -14,35 +14,16 @@
                 Dashboard
             </a>
         </li>
-        <li>
-            <div class="flex items-center">
-                <svg class="rtl:rotate-180 block w-3 h-3 mx-1 text-gray-400 " aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
-                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"></path>
-                </svg>
-                <a href="{% url 'aubouleau_web:building_detail' building_name=building.name %}" class="ms-1 text-sm font-medium text-gray-700 hover:text-green-600 md:ms-2 dark:text-gray-400 dark:hover:text-white">{{ building.name }}</a>
-            </div>
-        </li>
         <li aria-current="page">
             <div class="flex items-center">
                 <svg class="rtl:rotate-180  w-3 h-3 mx-1 text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"></path>
                 </svg>
-                <span class="ms-1 text-sm font-medium text-gray-500 md:ms-2 dark:text-gray-400">Equipment</span>
+                <span class="ms-1 text-sm font-medium text-gray-500 md:ms-2 dark:text-gray-400">Equipment: {{ equipment_type.name }}</span>
             </div>
         </li>
     </ol>
 </nav>
-{% endblock %}
-
-{% block navtabs %}
-<div class="flex flex-col max-w-xl text-sm font-medium text-center text-gray-500 border-b border-gray-200 dark:text-gray-400 dark:border-gray-700">
-    <ul class="flex flex-wrap gap-x-8 -mb-px">
-        <li class="me-2"><a href="{% url 'aubouleau_web:building_detail' building_name=building.name %}" class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300">Everything</a></li>
-        <li class="me-2"><a href="{% url 'aubouleau_web:building_floors' building_name=building.name %}" class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300">Floors</a></li>
-        <li class="me-2"><a href="{% url 'aubouleau_web:building_rooms' building_name=building.name %}" class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300">Rooms</a></li>
-        <li class="me-2"><a href="{% url 'aubouleau_web:building_equipment' building_name=building.name %}" class="inline-block p-4 text-green-500 border-b-2 border-green-500 rounded-t-lg active dark:text-green-500 dark:border-green-500" aria-current="page">Equipment</a></li>
-    </ul>
-</div>
 {% endblock %}
 
 {% block content %}
@@ -68,7 +49,7 @@
                                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.8 13.938h-.011a7 7 0 1 0-11.464.144h-.016l.14.171c.1.127.2.251.3.371L12 21l5.13-6.248c.194-.209.374-.429.54-.659l.13-.155Z"></path>
                             </svg>
                         {% if equipment.room %}
-                            <a href="{% url 'aubouleau_web:room-detail' building_name=building.name room_number=equipment.room.number %}" class="font-semibold underline text-sm text-gray-700 dark:text-gray-400">{{ equipment.room.number }}</a>
+                            <a href="{% url 'aubouleau_web:room-detail' building_name=equipment.room.floor.building.name room_number=equipment.room.number %}" class="font-semibold underline text-sm text-gray-700 dark:text-gray-400">{{ equipment.room.number }}</a>
                         {% else %}
                             <p class="font-semibold underline text-sm text-gray-700 dark:text-gray-400">No room</p>
                         {% endif %}

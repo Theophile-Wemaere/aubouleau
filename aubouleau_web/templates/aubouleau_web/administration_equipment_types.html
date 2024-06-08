@@ -1,7 +1,7 @@
 {% extends "aubouleau_web/base.html" %}
 {% load static %}
 
-{% block title %}Aubouleau | Administration | Buildings{% endblock %}
+{% block title %}Aubouleau | Administration | Equipment types{% endblock %}
 
 {% block breadcrumb %}
 <nav class="flex px-5 py-3 text-gray-700 border border-gray-200 rounded-lg bg-gray-50 dark:bg-gray-800 dark:border-gray-700" aria-label="Breadcrumb">
@@ -19,7 +19,7 @@
                 <svg class="rtl:rotate-180  w-3 h-3 mx-1 text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"></path>
                 </svg>
-                <span class="ms-1 text-sm font-medium text-gray-500 md:ms-2 dark:text-gray-400">Buildings</span>
+                <span class="ms-1 text-sm font-medium text-gray-500 md:ms-2 dark:text-gray-400">Equipment types</span>
             </div>
         </li>
     </ol>
@@ -31,23 +31,23 @@
     <div class="w-full relative overflow-x-auto shadow-lg sm:rounded-lg">
         <div class="flex flex-row justify-between items-center">
             <div class="p-5 text-lg font-semibold text-left rtl:text-right text-gray-900 bg-white dark:text-white dark:bg-gray-800">
-                Buildings
-                <p class="mt-1 text-sm font-normal text-gray-500 dark:text-gray-400">Add new buildings or edit and delete existing buildings.</p>
+                Equipment types
+                <p class="mt-1 text-sm font-normal text-gray-500 dark:text-gray-400">Add new equipment type or edit and delete existing equipment types.</p>
             </div>
-            <a href="{% url 'aubouleau_web:administration_buildings_new' %}">
+            <a href="{% url 'aubouleau_web:administration_equipment_types_new' %}">
                 <button type="button" class="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-4 h-10 text-center inline-flex items-center">
-                    Add a new building
+                    Add a new equipment type
                     <svg class="w-4 h-4 text-white ms-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-7 7V5"></path>
                     </svg>
                 </button>
             </a>
         </div>
-        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400" title="Buildings">
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400" title="Equipment">
             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
             <tr>
                 <th scope="col" class="px-6 py-3">
-                    Building name
+                    Equipment type
                 </th>
                 <th scope="col" class="px-6 py-3">
                     Creation time
@@ -58,17 +58,17 @@
             </tr>
             </thead>
             <tbody>
-            {% for building in buildings %}
+            {% for equipment_type in equipment_types %}
                 <tr class="bg-white border-b hover:bg-gray-50 dark:hover:bg-gray-600 dark:bg-gray-800 dark:border-gray-700">
                     <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                        {{ building.name}}
+                        {{ equipment_type.name}}
                     </th>
                     <td class="px-6 py-4">
-                        {{ building.created_at|date:"M d Y, H:i" }}
+                        {{ equipment_type.created_at|date:"M d Y, H:i" }}
                     </td>
                     <td class="flex flex-row items-center justify-center gap-x-4 px-6 py-4">
                         {# Edit button #}
-                        <a href="{% url 'aubouleau_web:administration_buildings_edit' building_name=building.name %}">
+                        <a href="{% url 'aubouleau_web:administration_equipment_types_edit' equipment_type_name=equipment_type.name %}">
                             <button type="button" class="text-white bg-yellow-300 hover:bg-yellow-400 focus:ring-4 focus:outline-none focus:ring-yellow-200 font-medium rounded-lg text-sm px-4 py-1.5 text-center inline-flex items-center">
                                 Edit
                                 <svg class="w-4 h-4 text-white ms-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
@@ -77,17 +77,17 @@
                             </button>
                         </a>
                         {# Delete button #}
-                        <button type="button" data-modal-target="confirm-delete-{{ building.name }}-popup" data-modal-toggle="confirm-delete-{{ building.name }}-popup" class="text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-500 font-medium rounded-lg text-sm px-4 py-1.5 text-center inline-flex items-center">
+                        <button type="button" data-modal-target="confirm-delete-equipment-type-{{ equipment_type.id }}-popup" data-modal-toggle="confirm-delete-equipment-type-{{ equipment_type.id }}-popup" class="text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-500 font-medium rounded-lg text-sm px-4 py-1.5 text-center inline-flex items-center">
                             Delete
                             <svg class="w-4 h-4 text-white ms-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"></path>
                             </svg>
                         </button>
                         {# Delete confirmation popup #}
-                        <div id="confirm-delete-{{ building.name }}-popup" tabindex="-1" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+                        <div id="confirm-delete-equipment-type-{{ equipment_type.id }}-popup" tabindex="-1" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
                             <div class="relative p-4 w-full max-w-md max-h-full">
                                 <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
-                                    <button type="button" class="absolute top-3 end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="confirm-delete-{{ building.name }}-popup">
+                                    <button type="button" class="absolute top-3 end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="confirm-delete-equipment-type-{{ equipment_type.id }}-popup">
                                         <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
                                             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"></path>
                                         </svg>
@@ -97,15 +97,15 @@
                                         <svg class="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
                                             <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"></path>
                                         </svg>
-                                        <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">Are you sure you want to delete the building <strong>{{ building.name }}</strong> ? <br><br><strong class="font-bold">All the associated floors and rooms will also be deleted !</strong></h3>
+                                        <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">Are you sure you want to delete the equipment type <strong>{{ equipment_type.name }}</strong> ?</h3>
                                         <div class="flex flex-row justify-center">
-                                        <form action="{% url 'aubouleau_web:administration_buildings_delete' building_name=building.name %}" method="post" class="w-fit">
+                                        <form action="{% url 'aubouleau_web:administration_equipment_types_delete' equipment_type_name=equipment_type.name %}" method="post" class="w-fit">
                                             {% csrf_token %}
-                                            <button type="submit" data-modal-hide="confirm-delete-{{ building.name }}-popup" class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center">
+                                            <button type="submit" data-modal-hide="confirm-delete-equipment-type-{{ equipment_type.id }}-popup" class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center">
                                                 Delete
                                             </button>
                                         </form>
-                                        <button data-modal-hide="confirm-delete-{{ building.name }}-popup" type="button" class="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-green-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
+                                        <button data-modal-hide="confirm-delete-equipment-type-{{ equipment_type.id }}-popup" type="button" class="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-green-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
                                             Abort
                                         </button>
                                         </div>

@@ -1,4 +1,4 @@
-from .models import Building, Floor, Room
+from .models import Building, Floor, Room, EquipmentType, Problem
 
 
 def add_sidebar_context(request):
@@ -11,4 +11,6 @@ def add_sidebar_context(request):
         "sidebar_buildings": Building.objects.all(),
         "sidebar_floors": Floor.objects.all(),
         "sidebar_rooms": Room.objects.all(),
+        "sidebar_equipment_types": EquipmentType.objects.all(),
+        "open_problems_count": Problem.objects.filter(status='OPEN').count()
     }

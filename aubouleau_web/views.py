@@ -1,14 +1,16 @@
-from datetime import datetime
+from datetime import datetime, timedelta
+from itertools import chain
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
+from django.db.models import Q
 from django.shortcuts import get_object_or_404, render, redirect
 from django.utils import timezone
-from django.utils.timezone import localtime, make_aware
+from django.utils.timezone import localtime, make_aware, make_naive
 
-from .models import Building, Floor, Room, TimeSlot, Equipment, EquipmentType
+from .models import Building, Floor, Room, TimeSlot, Equipment, EquipmentType, Problem, Comment
 
 
 def index(request):
@@ -18,13 +20,30 @@ def index(request):
     :return: An HTTP response containing the dashboard page.
     """
     buildings = Building.objects.all()
+    problems = Problem.objects.filter(status='OPEN').order_by('-created_at')
+
+    # Context for available and unavailable rooms
     available_rooms, unavailable_rooms = 0, 0
     for building in buildings:
         available_rooms += building.count_available_rooms()
         unavailable_rooms += building.count_unavailable_rooms()
 
-    rooms = Room.objects.all()
+    # Context for the room availability graph
+    today_time_slots = []
+    time = localtime(timezone.now()).replace(hour=TimeSlot.DAY_START.hour, minute=TimeSlot.DAY_START.minute, second=TimeSlot.DAY_START.second)
+    print(localtime(time))
+    while localtime(time).hour <= TimeSlot.DAY_END.hour:
+        today_time_slots.append((localtime(time).strftime("%H:%M"), Room.count_rooms_available_at(time), Room.count_rooms_unavailable_at(time)))
+        time = time + timedelta(hours=1)
 
+    # Context for the room availability percentage
+    if Room.objects.all().count() > 0:
+        room_availability = round(round(Room.count_rooms_available_at(timezone.now()) / Room.objects.all().count(), 2) * 100)
+    else:
+        room_availability = 0
+
+    # Context for rooms soon available and rooms soon unavailable
+    rooms = Room.objects.all()
     # Each tuple contains: the room soon available, its current time slot, the time left until available (in minutes) and the string "Updated [time] agp"
     rooms_soon_available: list[tuple[Room, TimeSlot, int, str]] = []
     for room in rooms:
@@ -53,7 +72,7 @@ def index(request):
     # Sort rooms soon unavailable based on the time left until unavailable (increasing order)
     sorted_rooms_soon_unavailable = sorted(rooms_soon_unavailable, key=lambda x: x[2])
 
-    return render(request, "aubouleau_web/index.html", {"available_rooms": available_rooms, "unavailable_rooms": unavailable_rooms, "rooms_soon_available": sorted_rooms_soon_available, "rooms_soon_unavailable": sorted_rooms_soon_unavailable})
+    return render(request, "aubouleau_web/index.html", {"room_availability": room_availability, "today_time_slots": today_time_slots, "problems": problems , "available_rooms": available_rooms, "unavailable_rooms": unavailable_rooms, "rooms_soon_available": sorted_rooms_soon_available, "rooms_soon_unavailable": sorted_rooms_soon_unavailable})
 
 
 def sign_in(request):
@@ -115,6 +134,99 @@ def sign_out(request):
     if request.method == 'GET':
         logout(request)
         return redirect("aubouleau_web:index")
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+@login_required()
+def profile(request):
+    """
+    Displays the profile page, which allows a user to modify its personal information.
+    :param request: The HTTP request.
+    :return: An HTTP response containing the user profile page.
+    """
+    if request.method == 'GET':
+        return render(request, "aubouleau_web/profile.html")
+    elif request.method == 'POST':
+        # TODO: If there's time, server-side validation
+        email = request.POST.get('email', None)
+        first_name = request.POST.get('first_name', None)
+        last_name = request.POST.get('last_name', None)
+        password = request.POST.get('password', None)
+        password_confirm = request.POST.get('password_confirm', None)
+
+        if password != password_confirm:
+            return render(request, status=400, template_name="400.html")
+
+        # Create the user, log it in and redirect to the dashboard page
+        user = request.user
+        user.email = email
+        user.first_name = first_name
+        user.last_name = last_name
+        if password and password_confirm:
+            user.set_password(password)
+            user.save()
+            return redirect("aubouleau_web:sign_in")
+        user.save()
+        return redirect("aubouleau_web:index")
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+def search(request):
+    """
+    Fetches objects matching the query_string in the database and displays them on a single page.
+    :param request: The HTTP request.
+    :return: A page featuring all the objects matching the provided query_string.
+    """
+    if request.method == 'POST':
+        query_string = request.POST.get('search_query', '')
+        matching_buildings = Building.objects.filter(name__icontains=query_string)
+        matching_floors = Floor.objects.filter(name__icontains=query_string)
+        matching_rooms = Room.objects.filter(Q(number__icontains=query_string) | Q(name__icontains=query_string))
+        matching_equipment = Equipment.objects.filter(
+            Q(name__icontains=query_string) |
+            Q(manufacturer__icontains=query_string) |
+            Q(model__icontains=query_string) |
+            Q(room__number__icontains=query_string)
+        )
+        matching_problems = Problem.objects.filter(
+            Q(status='OPEN') & (
+                Q(title__icontains=query_string) |
+                Q(description__icontains=query_string) |
+                Q(room__number__icontains=query_string) |
+                Q(room__name__icontains=query_string) |
+                Q(equipment__name__icontains=query_string) |
+                Q(equipment__manufacturer__icontains=query_string) |
+                Q(equipment__model__icontains=query_string)
+            )
+        )
+        search_category = request.POST.get('search_category', '')
+
+        if search_category == '':
+            context = {
+                "buildings": matching_buildings,
+                "floors": matching_floors,
+                "rooms": matching_rooms,
+                "equipment": matching_equipment,
+                "problems": matching_problems,
+                "query_string": query_string,
+                "results": True if matching_buildings or matching_floors or matching_rooms or matching_equipment or matching_equipment else False,
+            }
+        elif search_category == 'buildings':
+            context = {"buildings": matching_buildings, "query_string": query_string, "results": True if matching_buildings else False}
+        elif search_category == 'floors':
+            context = {"floors": matching_floors, "query_string": query_string, "results": True if matching_floors else False}
+        elif search_category == 'rooms':
+            context = {"rooms": matching_rooms, "query_string": query_string, "results": True if matching_rooms else False}
+        elif search_category == 'equipment':
+            context = {"equipment_list": matching_equipment, "query_string": query_string, "results": True if matching_equipment else False}
+        elif search_category == 'problems':
+            context = {"problems": matching_problems, "query_string": query_string, "results": True if matching_problems else False}
+        else:
+            context = {"query_string": query_string, "results": False}
+
+        return render(request, "aubouleau_web/search.html", context)
     else:
         return render(request, status=405, template_name="405.html")
 
@@ -513,6 +625,287 @@ def administration_equipment_delete(request, equipment_id):
         return render(request, status=405, template_name="405.html")
 
 
+@login_required
+def administration_equipment_types(request):
+    """
+    Displays the equipment types administration page.
+    :param request: The HTTP request.
+    :return: An HTTP response containing a page where equipment types are displayed and can be modified.
+    """
+    # This is not the best way to manage permissions, but for the scope of this application, checking that the
+    # user is a member of the "Administrators" group is enough.
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    equipment_types_list = EquipmentType.objects.all().order_by('name')
+
+    return render(request, "aubouleau_web/administration_equipment_types.html", {"equipment_types": equipment_types_list})
+
+
+@login_required()
+def administration_equipment_types_new(request):
+    """
+    Displays the page containing a form to add a new equipment type
+    :param request: The HTTP request.
+    :return: An HTTP response containing a page with a form to add a new equipment type.
+    """
+    # This is not the best way to manage permissions, but for the scope of this application, checking that the
+    # user is a member of the "Administrators" group is enough.
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    if request.method == 'GET':
+        return render(request, "aubouleau_web/administration_equipment_types_new.html")
+    elif request.method == 'POST':
+        equipment_type_name = request.POST.get('equipment_type_name', None)
+        # TODO: Handle equipment type picture upload
+        EquipmentType.objects.create(name=equipment_type_name, created_at=timezone.now())
+        return redirect("aubouleau_web:administration_equipment_types")
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+@login_required()
+def administration_equipment_types_edit(request, equipment_type_name):
+    """
+    Displays the page containing a form to edit an existing equipment type
+    :param request: The HTTP request.
+    :param equipment_type_name: The name of the equipment type to edit.
+    :return: An HTTP response containing a page with a form to edit an existing equipment type
+    """
+    # This is not the best way to manage permissions, but for the scope of this application, checking that the
+    # user is a member of the "Administrators" group is enough.
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    if request.method == 'GET':
+        equipment_type = EquipmentType.objects.get(name=equipment_type_name)
+        return render(request, "aubouleau_web/administration_equipment_types_edit.html", {"equipment_type": equipment_type})
+    elif request.method == 'POST':
+        equipment_type = EquipmentType.objects.get(name=equipment_type_name)
+        equipment_type_name = request.POST.get('equipment_type_name', None)
+        # TODO: Handle equipment picture upload
+
+        equipment_type.name = equipment_type_name
+        equipment_type.save()
+        return redirect("aubouleau_web:administration_equipment_types")
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+@login_required()
+def administration_equipment_types_delete(request, equipment_type_name):
+    """
+    Deletes an existing equipment type from the database. This method only handles POST requests.
+    :param request: The HTTP request.
+    :param equipment_type_name: The name of the equipment type to delete.
+    :return: An HTTP 302 response to the equipment types administration page.
+    """
+    # This is not the best way to manage permissions, but for the scope of this application, checking that the
+    # user is a member of the "Administrators" group is enough.
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    if request.method == 'POST':
+        equipment_type = EquipmentType.objects.get(name=equipment_type_name)
+        equipment_type.delete()
+        return redirect("aubouleau_web:administration_equipment_types")
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+def equipment(request, equipment_type_name):
+    """
+    Displays the list of all the :py:class:`Equipment` of the specified :py:class:`EquipmentType`.
+    :param request: The HTTP request.
+    :param equipment_type_name: The name of the :py:class:`EquipmentType` to display the equipment of.
+    :return: An HTTP response containing a page with all the relevant equipment.
+    """
+    equipment_type = EquipmentType.objects.get(name=equipment_type_name)
+    equipment_list = equipment_type.equipment_set.all().order_by('room')
+
+    return render(request, "aubouleau_web/equipment.html", {"equipment_type": equipment_type, "equipment_list": equipment_list})
+
+
+def problems(request):
+    """
+    Displays the list of all the :py:class:`Problem` with the "OPEN" status.
+    :param request: The HTTP request.
+    :return: An HTTP response containing a page with all the open problems.
+    """
+    open_problems_list = Problem.objects.filter(status='OPEN').order_by('-created_at')
+    return render(request, "aubouleau_web/problems.html", {"problems": open_problems_list})
+
+
+def problems_closed(request):
+    """
+    Displays the list of all the :py:class:`Problem` with the "CLOSED" or "SOLVED" status.
+    :param request: The HTTP request.
+    :return: An HTTP response containing a page with all the closed problems.
+    """
+    closed_problems_list = Problem.objects.filter(Q(status='SOLVED') | Q(status='CLOSED')).order_by('id')
+    return render(request, "aubouleau_web/problems_closed.html", {"problems": closed_problems_list})
+
+
+def problem_detail(request, problem_id):
+    """
+    Displays the details of a specific :py:class:`Problem`.
+    :param request: The HTTP request.
+    :param problem_id: The id of the problem to display the details of.
+    :return: An HTTP response containing a page with the details of the problem.
+    """
+    problem = Problem.objects.get(pk=problem_id)
+    comments = problem.comment_set.all().order_by('created_at')
+    return render(request, "aubouleau_web/problem_detail.html", {"problem": problem, "comments": comments})
+
+
+@login_required()
+def problems_new(request):
+    """
+    Displays the page containing a form to report a new problem
+    :param request: The HTTP request.
+    :return: An HTTP response containing a page with a form to report a new problem.
+    """
+    if request.method == 'GET':
+        rooms_list = Room.objects.all().order_by('floor')
+        equipment_list = Equipment.objects.all().order_by('type')
+        return render(request, "aubouleau_web/problems_new.html", {"rooms": rooms_list, "equipment_list": equipment_list})
+    elif request.method == 'POST':
+        title = request.POST.get('title', None)
+        description = request.POST.get('description', None)
+        room_id = request.POST.get('room_id', None)
+        equipment_id = request.POST.get('equipment_id', None)
+
+        # TODO: Fix this terribleness
+        # For the sake of your eyes, skip to line 675
+        # Proper server side validation would be way better, yes, but this will do it for now
+        if room_id == '':
+            room_id = None
+        if equipment_id == '':
+            equipment_id = None
+
+        try:
+            room = Room.objects.get(pk=room_id)
+        except Room.DoesNotExist:
+            room = None
+        try:
+            equipment = Equipment.objects.get(pk=equipment_id)
+        except Equipment.DoesNotExist:
+            equipment = None
+
+        if (not room and not equipment) or (room and equipment):
+            return render(request, status=400, template_name="400.html")
+
+        Problem.objects.create(status='OPEN', title=title, description=description, reporter=request.user, room=room, equipment=equipment, created_at=timezone.now())
+        return redirect("aubouleau_web:problems")
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+@login_required()
+def problems_solve(request, problem_id):
+    """
+    Marks an existing :py:class:`Problem` as "SOLVED". This method only handles POST requests.
+    :param request: The HTTP request.
+    :param problem_id: The id of the problem to mark as "SOLVED".
+    :return: An HTTP 302 to the problem detail page.
+    """
+    problem = Problem.objects.get(pk=problem_id)
+    # Only administrators can solve problems
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    if request.method == 'POST':
+        problem.mark_solved(solved_by=request.user)
+        return redirect("aubouleau_web:problem_detail", problem_id=problem_id)
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+@login_required()
+def problems_close(request, problem_id):
+    """
+    Marks an existing :py:class:`Problem` as "CLOSED". This method only handles POST requests.
+    :param request: The HTTP request.
+    :param problem_id: The id of the problem to mark as "CLOSED".
+    :return: An HTTP 302 to the problem detail page.
+    """
+    problem = Problem.objects.get(pk=problem_id)
+    # Only administrators can solve problems
+    if not request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    if request.method == 'POST':
+        problem.mark_closed(closed_by=request.user)
+        return redirect("aubouleau_web:problem_detail", problem_id=problem_id)
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+@login_required()
+def problems_delete(request, problem_id):
+    """
+    Deletes an existing :py:class:`Problem`. This method only handles POST requests.
+    :param request: The HTTP request.
+    :param problem_id: The id of the problem to delete.
+    :return: An HTTP 302 to the problems page.
+    """
+    problem = Problem.objects.get(pk=problem_id)
+    # Only the problem's reporter or administrators can delete problems
+    if request.user != problem.reporter and request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    if request.method == 'POST':
+        problem.delete()
+        return redirect("aubouleau_web:problems")
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+@login_required()
+def problems_comment_add(request, problem_id):
+    """
+    Adds a comment to an existing :py:class:`Problem`. This method only handles POST requests.
+    :param request: The HTTP request.
+    :param problem_id: The id of the problem to add a comment on.
+    :return: An HTTP 302 to the detail page of the problem.
+    """
+    if request.method == 'POST':
+        problem = Problem.objects.get(pk=problem_id)
+
+        # Prevent comments from being posted on closed or resolved issues.
+        if not problem.is_open():
+            raise PermissionDenied()
+
+        text = request.POST.get('comment', None)
+        author = User.objects.get(pk=request.user.id)
+        problem.comment_set.create(text=text, author=author, created_at=timezone.now())
+        return redirect("aubouleau_web:problem_detail", problem_id=problem_id)
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
+@login_required()
+def problems_comment_delete(request, problem_id, comment_id):
+    """
+    Deletes a comment from an existing :py:class:`Problem`. This method only handles POST requests.
+    :param request: The HTTP request.
+    :param problem_id: The id of the problem the comment is attached to.
+    :param comment_id: The id of the comment to delete.
+    :return: An HTTP 302 to the detail page of the problem.
+    """
+    comment = Comment.objects.get(pk=comment_id)
+    # Only the comment's author or administrators can delete comments
+    if request.user != comment.author and request.user.groups.filter(name="Administrators").exists():
+        raise PermissionDenied()
+
+    if request.method == 'POST':
+        comment.delete()
+        return redirect("aubouleau_web:problem_detail", problem_id=problem_id)
+    else:
+        return render(request, status=405, template_name="405.html")
+
+
 def buildings(request):
     """
     Displays the list of all the :py:class:`Building`.
@@ -615,6 +1008,7 @@ def room_detail(request, building_name, room_number):
     building = Building.objects.get(name=building_name)
     room = Room.objects.get(number=room_number)
     time_slots = room.timeslot_set.all().order_by("start_time")
+    problems = room.problem_set.filter(status='OPEN').order_by("-created_at")
 
     # A list containing tuples made of 2 elements: (TimeSlot object, True if the time slot is marked as available, False otherwise)
     time_slots_list: list[tuple[TimeSlot, bool]] = []
@@ -644,7 +1038,7 @@ def room_detail(request, building_name, room_number):
         day_end = make_aware(TimeSlot.DAY_END.replace(year=datetime.now().year, month=datetime.now().month, day=datetime.now().day))
         time_slots_list.append((TimeSlot(subject="Room is available", start_time=previous_time_slot.end_time, end_time=day_end, created_at=timezone.now(), room=previous_time_slot.room), True))
 
-    return render(request, "aubouleau_web/room_detail.html", {"building": building, "room": room, "time_slots": time_slots_list})
+    return render(request, "aubouleau_web/room_detail.html", {"building": building, "room": room, "time_slots": time_slots_list, "problems": problems})
 
 
 def building_equipment(request, building_name):

@@ -8,6 +8,7 @@ import icalendar
 import requests
 from dotenv import load_dotenv
 from selenium import webdriver
+from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.firefox.options import Options
@@ -76,28 +77,40 @@ def download_calendars(rooms_list: list[str]) -> None:
     # Let the page load
     time.sleep(1)
 
+    download_failed = False
     for room in rooms_list:
         print(f"[hpfetch] Downloading calendar of room {room}...", end="", flush=True)
-        # click on search bar
-        driver.find_element(By.ID, "GInterface.Instances[1].Instances[1].bouton_Edit").click()
-        # clear value
-        driver.find_element(By.ID, "GInterface.Instances[1].Instances[1].bouton_Edit").clear()
-        # set value to current room and valid
-        driver.find_element(By.ID, "GInterface.Instances[1].Instances[1].bouton_Edit").send_keys(room)
-        driver.find_element(By.ID, "GInterface.Instances[1].Instances[1].bouton_Edit").send_keys(Keys.ENTER)
-        time.sleep(1)
-        # click on ICAL export button
-        driver.find_element(By.ID, "GInterface.Instances[0].Instances[4]_ical").click()
-        time.sleep(1)
-        # get link
-        link_element = driver.find_element(By.CSS_SELECTOR, '[aria-label="L\'emploi du temps est récupéré tel qu\'il est et ne sera pas mis à jour automatiquement. Cliquez sur le lien ci-dessous : Exporter l\'emploi du temps au format iCal"]')
-        ical_link = str(link_element.get_attribute("href"))
-        r = requests.get(ical_link)
-        with open(f"{CALENDARS_DIRECTORY}/{room}.ics", "wb") as file:
-            file.write(r.content)
-        # close ical export menu
-        link_element.send_keys(Keys.ESCAPE)
-        print("\t[OK]")
+        try:
+            # click on search bar
+            driver.find_element(By.ID, "GInterface.Instances[1].Instances[1].bouton_Edit").click()
+            # clear value
+            driver.find_element(By.ID, "GInterface.Instances[1].Instances[1].bouton_Edit").clear()
+            # set value to current room and valid
+            driver.find_element(By.ID, "GInterface.Instances[1].Instances[1].bouton_Edit").send_keys(room)
+            driver.find_element(By.ID, "GInterface.Instances[1].Instances[1].bouton_Edit").send_keys(Keys.ENTER)
+            time.sleep(1)
+            # click on ICAL export button
+            driver.find_element(By.ID, "GInterface.Instances[0].Instances[4]_ical").click()
+            time.sleep(1)
+            # get link
+            link_element = driver.find_element(By.CSS_SELECTOR, '[aria-label="L\'emploi du temps est récupéré tel qu\'il est et ne sera pas mis à jour automatiquement. Cliquez sur le lien ci-dessous : Exporter l\'emploi du temps au format iCal"]')
+            ical_link = str(link_element.get_attribute("href"))
+            r = requests.get(ical_link)
+            with open(f"{CALENDARS_DIRECTORY}/{room}.ics", "wb") as file:
+                file.write(r.content)
+            # close ical export menu
+            link_element.send_keys(Keys.ESCAPE)
+        except Exception:
+            # If a popup is blocking the view (when the room schedule has not been found for example),
+            # press ESCAPE and move on to the next room
+            ActionChains(driver).send_keys(Keys.ESCAPE).perform()
+            download_failed = True
+            print("\t[FAILED]")
+        else:
+            print("\t[OK]")
+
+    if download_failed:
+        print("[hpfetch] [WARN] Some calendars could not be downloaded. Ensure that the schedules for the rooms in question are available on Hyperplanning.")
 
     driver.close()
 

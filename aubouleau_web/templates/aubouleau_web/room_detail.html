@@ -43,7 +43,6 @@
 {% endblock %}
 
 {% block content %}
-{# TODO: Add the list of equipment available in this room #}
 <div class="flex flex-row flex-grow items-start gap-x-10 justify-between px-10 pb-4" id="content">
     {# First column #}
     <div class="flex flex-col flex-grow gap-y-10 max-w-[50%]">
@@ -110,34 +109,30 @@
         <a href="#" class="flex flex-col bg-white border border-gray-200 rounded-lg shadow min-w-72 max-h-72">
             <img class="object-cover w-full rounded-lg h-72" src="{% if room.picture %}{% get_static_prefix %}aubouleau_web/images/{{ room.picture }}{% endif %}" alt="{{ room.number }}-picture">
         </a>
+        {# Newest problems #}
         <div class="flex flex-col flex-grow gap-y-4 border border-gray-300 rounded-lg shadow px-4 py-3 w-full">
             <div class="flex flex-col flex-grow gap-y-6">
                 <h4 class="text-2xl underline font-bold text-gray-900">Newest problems</h4>
+                {% if problems %}
                 <div class="flex flex-col gap-y-2.5">
-                    <a href="#" class="flex flex-col gap-y-2 px-6 py-2.5 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
+                    {% for problem in problems|slice:":3" %}
+                    {% load custom_filters %}
+                    <a href="{% url 'aubouleau_web:problem_detail' problem_id=problem.id %}" class="flex flex-col gap-y-2 px-6 py-2.5 bg-white border border-gray-200 rounded-lg shadow max-w-3xl hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
                         <div class="flex flex-row justify-between items-center">
-                            <h5 class="text-xl font-bold tracking-tight text-gray-900 dark:text-white">Missing chairs</h5>
-                            <p class="text-sm text-gray-400">17 mins ago</p>
+                            <h5 class="text-xl font-bold tracking-tight text-gray-900 dark:text-white truncate">{{ problem.title }}</h5>
+                            <p class="text-sm text-gray-400">{{ problem|time_elapsed_since_creation}} ago</p>
                         </div>
-                        <p class="text-sm font-normal text-gray-600 dark:text-gray-400">About 5 chairs are missing. Some students are sitting on the floor...</p>
+                        <p class="text-sm font-normal text-gray-600 dark:text-gray-400 truncate">{{ problem.description }}</p>
                     </a>
-                    <a href="#" class="flex flex-col gap-y-2 px-6 py-2.5 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
-                        <div class="flex flex-row justify-between items-center">
-                            <h5 class="text-xl font-bold tracking-tight text-gray-900 dark:text-white">Missing chairs</h5>
-                            <p class="text-sm text-gray-400">17 mins ago</p>
-                        </div>
-                        <p class="text-sm font-normal text-gray-600 dark:text-gray-400">About 5 chairs are missing. Some students are sitting on the floor...</p>
-                    </a>
-                    <a href="#" class="flex flex-col gap-y-2 px-6 py-2.5 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
-                        <div class="flex flex-row justify-between items-center">
-                            <h5 class="text-xl font-bold tracking-tight text-gray-900 dark:text-white">Missing chairs</h5>
-                            <p class="text-sm text-gray-400">17 mins ago</p>
-                        </div>
-                        <p class="text-sm font-normal text-gray-600 dark:text-gray-400">About 5 chairs are missing. Some students are sitting on the floor...</p>
-                    </a>
+                    {% endfor %}
                 </div>
+                {% else %}
+                <div class="flex flex-col items-center justify-center h-full">
+                    <p class="text-gray-500 text-center">Good news, no problems to show !</p>
+                </div>
+                {% endif %}
             </div>
-            <a class="flex flex-row justify-end items-center text-green-500 hover:text-green-700" href="#">
+            <a href="{% url 'aubouleau_web:problems' %}" class="flex flex-row justify-end items-center text-green-500 hover:text-green-700">
                 <p class="text-sm uppercase font-semibold">View more</p>
                 <svg class="w-6 h-6 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m10 16 4-4-4-4"></path>

@@ -59,18 +59,26 @@
                             <p class="font-normal text-sm text-gray-700 dark:text-gray-400">{{ floor.count_rooms }} rooms</p>
                         </li>
                         <li class="flex flex-row items-center gap-1">
-                            <svg class="w-[20px] h-[20px] text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.005 11.19V12l6.998 4.042L19 12v-.81M5 16.15v.81L11.997 21l6.998-4.042v-.81M12.003 3 5.005 7.042l6.998 4.042L19 7.042 12.003 3Z"/></svg>
-                            <p class="font-normal text-sm text-gray-700 dark:text-gray-400">99 [info]</p>
+                            <svg class="w-[20px] h-[20px] text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v5m-3 0h6M4 11h16M5 15h14a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1Z"></path></svg>
+                            <p class="font-normal text-sm text-gray-700 dark:text-gray-400">{{ floor.count_computers }} computer{{ floor.count_computers|pluralize }}</p>
                         </li>
-                        <li class="flex flex-row items-center gap-1">
+                        <li class="invisible flex flex-row items-center gap-1">
                             <svg class="w-[20px] h-[20px] text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M14 7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7Zm2 9.387 4.684 1.562A1 1 0 0 0 22 17V7a1 1 0 0 0-1.316-.949L16 7.613v8.774Z" clip-rule="evenodd"></path></svg>
                             <p class="font-normal text-sm text-gray-700 dark:text-gray-400">99 [info]</p>
                         </li>
                     </ul>
+                    {# Problems indicator #}
+                    {% if floor.count_open_problems > 0 %}
                     <div class="flex flex-row items-center gap-2 mt-2">
-                        <svg class="w-[20px] h-[20px] text-green-400 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm13.707-1.293a1 1 0 0 0-1.414-1.414L11 12.586l-1.793-1.793a1 1 0 0 0-1.414 1.414l2.5 2.5a1 1 0 0 0 1.414 0l4-4Z" clip-rule="evenodd"></path></svg>
-                        <p class="font-bold text-sm text-green-400 dark:text-green-400">Available</p>
+                        <svg class="w-[20px] h-[20px] text-yellow-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm11-4a1 1 0 1 0-2 0v5a1 1 0 1 0 2 0V8Zm-1 7a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2H12Z" clip-rule="evenodd"></path></svg>
+                        <p class="font-bold text-sm text-yellow-400">{{ building.count_open_problems }} problem{{ building.count_open_problems|pluralize }}</p>
                     </div>
+                    {% else %}
+                    <div class="flex flex-row items-center gap-2 mt-2">
+                        <svg class="w-[20px] h-[20px] text-green-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm13.707-1.293a1 1 0 0 0-1.414-1.414L11 12.586l-1.793-1.793a1 1 0 0 0-1.414 1.414l2.5 2.5a1 1 0 0 0 1.414 0l4-4Z" clip-rule="evenodd"></path></svg>
+                        <p class="font-bold text-sm text-green-500 dark:text-green-400">No problems</p>
+                    </div>
+                    {% endif %}
                 </div>
             </a>
         {% endfor %}
