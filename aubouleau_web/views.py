@@ -177,15 +177,22 @@ def search(request):
         matching_buildings = Building.objects.filter(name__icontains=query_string)
         matching_floors = Floor.objects.filter(name__icontains=query_string)
         matching_rooms = Room.objects.filter(Q(number__icontains=query_string) | Q(name__icontains=query_string))
-        matching_equipment = Equipment.objects.filter(Q(name__icontains=query_string) | Q(manufacturer__icontains=query_string) | Q(model__icontains=query_string))
+        matching_equipment = Equipment.objects.filter(
+            Q(name__icontains=query_string) |
+            Q(manufacturer__icontains=query_string) |
+            Q(model__icontains=query_string) |
+            Q(room__number__icontains=query_string)
+        )
         matching_problems = Problem.objects.filter(
-            Q(title__icontains=query_string) |
-            Q(description__icontains=query_string) |
-            Q(room__number__icontains=query_string) |
-            Q(room__name__icontains=query_string) |
-            Q(equipment__name__icontains=query_string) |
-            Q(equipment__manufacturer__icontains=query_string) |
-            Q(equipment__model__icontains=query_string)
+            Q(status='OPEN') & (
+                Q(title__icontains=query_string) |
+                Q(description__icontains=query_string) |
+                Q(room__number__icontains=query_string) |
+                Q(room__name__icontains=query_string) |
+                Q(equipment__name__icontains=query_string) |
+                Q(equipment__manufacturer__icontains=query_string) |
+                Q(equipment__model__icontains=query_string)
+            )
         )
         search_category = request.POST.get('search_category', '')
 
