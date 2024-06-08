@@ -36,7 +36,10 @@ def index(request):
         time = time + timedelta(hours=1)
 
     # Context for the room availability percentage
-    room_availability = round(round(Room.count_rooms_available_at(timezone.now()) / Room.objects.all().count(), 2) * 100)
+    if Room.objects.all().count() > 0:
+        room_availability = round(round(Room.count_rooms_available_at(timezone.now()) / Room.objects.all().count(), 2) * 100)
+    else:
+        room_availability = 0
 
     # Context for rooms soon available and rooms soon unavailable
     rooms = Room.objects.all()
