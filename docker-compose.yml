@@ -1,3 +1,7 @@
+volumes:
+  # Named volume used by aubouleau-db
+  aubouleau-data:
+
 services:
   # MariaDB
   aubouleau-db:
@@ -16,6 +20,10 @@ services:
       retries: 10
       test: ["CMD", "healthcheck.sh", "--su-mysql", "--connect", "--innodb_initialized"]
       timeout: 5s
+    volumes:
+      # MariaDB data volume
+      # /!\ Don't forget to set the INITIAL_DEPLOY variable to false in the aubouleau-web service !
+      - aubouleau-data:/var/lib/mysql:Z
   # Aubouleau web application
   aubouleau-web:
     container_name: aubouleau-web
@@ -49,6 +57,10 @@ services:
       DJANGO_SUPERUSER_USERNAME: admin
       DJANGO_SUPERUSER_PASSWORD: admin
       DJANGO_SUPERUSER_EMAIL: admin@example.org
+      # /!\ Important, setting this to true will DELETE all data in the database and load the initial data.
+      # If you are deploying the application for the very first time, set this to true.
+      # If you want to redeploy the application with existing data, set this to false.
+      INITIAL_DEPLOY: true
     volumes:
       # The container will collect all static files and put them in /app/static, which is bound to ./aubouleau_web/static on the host
       # This will ensure that the static files for the admin app are collected
