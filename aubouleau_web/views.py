@@ -162,9 +162,12 @@ def profile(request):
         user.email = email
         user.first_name = first_name
         user.last_name = last_name
-        user.set_password(password)
+        if password and password_confirm:
+            user.set_password(password)
+            user.save()
+            return redirect("aubouleau_web:sign_in")
         user.save()
-        return redirect("aubouleau_web:sign_in")
+        return redirect("aubouleau_web:index")
     else:
         return render(request, status=405, template_name="405.html")
 
