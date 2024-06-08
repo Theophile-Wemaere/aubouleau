@@ -521,9 +521,7 @@ class Problem(models.Model):
         :return: A string representing the time elapsed since this problem was created (ex:  "10s", "13d", "1y", etc.)
         """
         delta = timezone.now() - self.created_at
-        seconds, minutes, hours = delta.seconds, floor(delta.seconds / 60), floor(delta.seconds / 3600)
-        days = floor(hours / 24)
-        years = floor(days / 365)
+        seconds, minutes, hours, days, years = delta.seconds, floor(delta.seconds / 60), floor(delta.seconds / 3600), delta.days, floor(delta.days / 365)
 
         if years >= 1:
             if short:
@@ -561,9 +559,7 @@ class Comment(models.Model):
         :return: A string representing the time elapsed since this comment was created (ex:  "10 seconds", "13 days", "1 year", etc.)
         """
         delta = timezone.now() - self.created_at
-        seconds, minutes, hours = delta.seconds, floor(delta.seconds / 60), floor(delta.seconds / 3600)
-        days = floor(hours / 24)
-        years = floor(days / 365)
+        seconds, minutes, hours, days, years = delta.seconds, floor(delta.seconds / 60), floor(delta.seconds / 3600), delta.days, floor(delta.days / 365)
 
         if years >= 1:
             return f"{years} year{'s' if years > 1 else ''}"
