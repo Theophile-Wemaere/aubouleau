@@ -8,3 +8,4 @@ docker-compose.yml
 Dockerfile
 package.json
 package-lock.json
+./aubouleau_web/static/admin/

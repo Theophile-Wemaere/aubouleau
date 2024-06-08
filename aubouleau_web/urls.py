@@ -1,3 +1,4 @@
+from django.contrib.auth.models import Group, User
 from django.urls import path
 
 from . import views
@@ -141,7 +142,7 @@ urlpatterns = [
     path("<str:building_name>/floors/<int:floor_number>/rooms/", views.floor_rooms, name="floor_rooms"),
     # /[building_name]/floors/[floor_number]/equipment
     # Example: https://aubouleau.fr/NDL/floors/1/equipment
-path("<str:building_name>/floors/<int:floor_number>/equipment/", views.floor_equipment, name="floor_equipment"),
+    path("<str:building_name>/floors/<int:floor_number>/equipment/", views.floor_equipment, name="floor_equipment"),
     # /[building_name]/rooms
     # Example: https://aubouleau.fr/NDL/rooms
     path("<str:building_name>/rooms/", views.building_rooms, name="building_rooms"),
