@@ -30,9 +30,10 @@ def index(request):
 
     # Context for the room availability graph
     today_time_slots = []
-    time = timezone.now().replace(hour=TimeSlot.DAY_START.hour, minute=TimeSlot.DAY_START.minute)
-    while time.hour <= TimeSlot.DAY_END.hour:
-        today_time_slots.append((time.strftime("%H:%M"), Room.count_rooms_available_at(time), Room.count_rooms_unavailable_at(time)))
+    time = localtime(timezone.now()).replace(hour=TimeSlot.DAY_START.hour, minute=TimeSlot.DAY_START.minute, second=TimeSlot.DAY_START.second)
+    print(localtime(time))
+    while localtime(time).hour <= TimeSlot.DAY_END.hour:
+        today_time_slots.append((localtime(time).strftime("%H:%M"), Room.count_rooms_available_at(time), Room.count_rooms_unavailable_at(time)))
         time = time + timedelta(hours=1)
 
     # Context for the room availability percentage
