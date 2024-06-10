@@ -49,7 +49,7 @@ services:
       DB_NAME: aubouleau
       DB_USERNAME: aubouleau
       DB_PASSWORD: aubouleau
-      # Hyperplanning
+      # Hyperplanning credentials
       HP_USERNAME: hyperplanning_user
       # HP_PASSWORD must be in base64 !
       HP_PASSWORD: hyperplanning_password_in_base64
