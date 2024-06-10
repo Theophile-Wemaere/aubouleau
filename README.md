@@ -64,6 +64,8 @@ As of now, the application can be deployed as a `Docker Compose` stack. The prov
 
 If you haven't done it already, [install Docker](https://docs.docker.com/engine/install/). Refer to the linked documentation for the installation instructions specific to your distribution.
 
+The `docker-compose.yml` file already contains default values that allows the application to be deployed locally. However, you need to set both the `HP_USERNAME` and `HP_PASSWORD` variables in order for the application to start. As indicated in the comments in `docker-compose.yml`, ensure that `HP_PASSWORD` is encoded in `base64` without the newline character.
+
 To create the `Docker Compose` stack, simply run the following command in a terminal:
 ```shell
 sudo docker compose up -d --build
