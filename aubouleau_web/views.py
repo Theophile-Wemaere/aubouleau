@@ -208,7 +208,7 @@ def search(request):
                 "buildings": matching_buildings,
                 "floors": matching_floors,
                 "rooms": matching_rooms,
-                "equipment": matching_equipment,
+                "equipment_list": matching_equipment,
                 "problems": matching_problems,
                 "query_string": query_string,
                 "results": True if matching_buildings or matching_floors or matching_rooms or matching_equipment or matching_equipment else False,
