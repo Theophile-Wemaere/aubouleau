@@ -355,6 +355,10 @@ def administration_floors_new(request):
         floor_name = request.POST.get('floor_name', None)
         floor_number = request.POST.get('floor_number', None)
         floor_building_id = request.POST.get('floor_building_id', None)
+
+        if int(floor_number) < 0:
+            return render(request, status=400, template_name="400.html")
+        
         Floor.objects.create(name=floor_name, number=floor_number, building=Building.objects.get(pk=floor_building_id), created_at=timezone.now())
         return redirect("aubouleau_web:administration_floors")
     else:
@@ -387,6 +391,9 @@ def administration_floors_edit(request, building_name, floor_number):
         floor_number = request.POST.get('floor_number', None)
         floor_building_id = request.POST.get('floor_building_id', None)
 
+        if int(floor_number) < 0:
+            return render(request, status=400, template_name="400.html")
+        
         floor.name = floor_name
         floor.number = floor_number
         floor.building = Building.objects.get(pk=floor_building_id)
